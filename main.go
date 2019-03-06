@@ -1,7 +1,10 @@
-package main
+package main;
 
-import "fmt"
+import "lnet"
 
 func main() {
-	fmt.Printf("test")
+	processor := &lnet.DefProcessor{}
+	protocol := &lnet.MyProtocol{}
+	tcpServer := lnet.NewTcpServer(protocol,processor)
+	tcpServer.Start()
 }
