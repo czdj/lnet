@@ -90,7 +90,7 @@ func (this *TcpTransport) Read(){
 	}
 }
 
-func (this *TcpTransport) Write(tag uint16, msg *Message){
+func (this *TcpTransport) Write(tag uint16, msg interface{}){
 	data := this.protocol.Encode(tag, msg)
 
 	_,err := this.Conn.Write(data)

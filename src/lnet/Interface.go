@@ -50,7 +50,7 @@ type Transport interface {
 	Listen() error
 	Connect() error
 	Read()
-	Write(tag uint16, msg *Message)
+	Write(tag uint16, msg interface{})
 	Close()
 	IsStop() bool
 }
@@ -78,7 +78,7 @@ func (this *DefTransport) Read(){
 
 }
 
-func (this *DefTransport) Write(tag uint16, msg *Message){
+func (this *DefTransport) Write(tag uint16, msg interface{}){
 
 }
 

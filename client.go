@@ -13,9 +13,11 @@ func main() {
 	transport := lnet.NewTcpTransport("127.0.0.1:9000",protocol,processor,nil)
 	transport.Connect()
 	msg := &lnet.Message{Data:"zzzzz"}
+	msg1 := "bbbbbbbb"
 	for {
 		transport.Write(11,msg)
-		time.Sleep(5000)
+		transport.Write(12,msg1)
+		time.Sleep(1 * time.Second)
 	}
 
 }
