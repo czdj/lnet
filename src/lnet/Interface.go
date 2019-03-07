@@ -1,6 +1,30 @@
 package lnet
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
+
+type MsgTypeMap struct {
+	msgTypeMap map[uint16]reflect.Type
+}
+func (this *MsgTypeMap)Register(tag uint16,msg interface{}){
+	msgType := reflect.TypeOf(msg)
+	this.msgTypeMap[tag] = msgType
+}
+
+func (this *MsgTypeMap)NewMsg(tag uint16)interface{}{
+	 msgType,err := this.msgTypeMap[tag]
+	if err == false{
+		fmt.Println("Msg Type Err!")
+		return nil
+	}
+	 msg := reflect.New(msgType).Interface()
+	return msg
+}
+
+var MsgTypeInfo MsgTypeMap = MsgTypeMap{msgTypeMap:make(map[uint16]reflect.Type)}
+
 
 type NetType int
 const (
@@ -14,58 +38,27 @@ type PakgeHead struct {
 }
 type Pakge struct {
 	head PakgeHead
-	data []byte
+	data interface{}
 }
 
 type Message struct {
-	data string
-}
-
-//处理每一个连接的数据接受
-type Connect interface {
-	Read()
-	Write()
-	Close()
-	IsStop() bool
-}
-
-type DefConnect struct {
-	id int
-	netType NetType
-	protocol Protocol
-	processor Processor
-}
-
-func (this *DefConnect) Read(){
-
-}
-
-func (this *DefConnect) Write(){
-
-}
-
-func (this *DefConnect) Close(){
-
-}
-
-func (this *DefConnect) IsStop() bool{
-	return false
+	Data string
 }
 
 //监听类，负责接收连接
 type Transport interface {
 	Listen() error
+	Connect() error
 	Read()
-	Write(msg *Message)
+	Write(tag uint16, msg *Message)
 	Close()
 	IsStop() bool
 }
 
 type DefTransport struct{
-	id int
-	netType NetType
-	Net  string
-	Addr string
+	Id int
+	NetType NetType
+	NetAddr string
 	PeerAddr string
 	StopFlag bool
 
@@ -77,11 +70,15 @@ func (this *DefTransport) Listen() error{
 	return nil
 }
 
+func (this *DefTransport) Connect() error{
+	return nil
+}
+
 func (this *DefTransport) Read(){
 
 }
 
-func (this *DefTransport) Write(msg *Message){
+func (this *DefTransport) Write(tag uint16, msg *Message){
 
 }
 
@@ -96,21 +93,21 @@ func (this *DefTransport)IsStop() bool{
 
 //负责解析协议
 type Protocol interface {
-	Encode(msg *Message) *Pakge
-	Decode(pakge *Pakge) *Message
+	Encode(tag uint16, msg interface{}) []byte
+	Decode(tag uint16, data []byte) interface{}
 }
 
 //负责业务处理
 type Processor  interface {
-	Process(msg *Message)
+	Process(msg interface{})
 }
 
 type DefProcessor struct {
 
 }
 
-func (this *DefProcessor)Process(msg *Message){
-	fmt.Printf("process:%v",msg)
+func (this *DefProcessor)Process(msg interface{}){
+	fmt.Println("process:%v",msg)
 }
 
 type Server interface {
@@ -118,12 +115,10 @@ type Server interface {
 }
 
 type DefServer struct {
-	netType NetType
-	netAddr string
+	NetType NetType
+	NetAddr string
 
 	transport Transport
-	protocol  Protocol
-	processor Processor
 }
 //接受连接，每个连接对应一个结构，每个连接开一个goroution，每一个连接里处理读写消息
 func (this *DefServer) Start(){
