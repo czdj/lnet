@@ -12,8 +12,8 @@ type TcpTransport struct {
 	Conn net.Conn
 }
 
-func NewTcpTransport(netAddr string, protocol  Protocol, processor Processor,conn net.Conn) *TcpTransport{
-	return  &TcpTransport{DefTransport:DefTransport{NetAddr:netAddr,StopFlag:false,protocol:protocol,processor:processor},Conn:conn}
+func NewTcpTransport(netAddr string, protocol  IProtocol, processor IProcessor,conn net.Conn) *TcpTransport{
+	return  &TcpTransport{DefTransport:DefTransport{NetAddr:netAddr,StopFlag:0,cwrite:make(chan *[]byte,64),protocol:protocol,processor:processor},Conn:conn}
 }
 
 func (this *TcpTransport) Listen() error {
@@ -33,12 +33,11 @@ func (this *TcpTransport) Listen() error {
 		conn, err := listen.Accept();
 		if err != nil{
 			fmt.Println("tcp Accept err:%v!",err)
-			this.StopFlag = true
+			this.StopFlag = 1
 			return err
 		}
 		tcpTransport := NewTcpTransport(this.NetAddr,this.protocol,this.processor,conn)
-		go tcpTransport.Read()
-		//go tcpConnect.Write()
+		this.OnNewConnect(tcpTransport)
 	}
 
 	return nil
@@ -59,17 +58,21 @@ func (this *TcpTransport) Connect() error{
 	fmt.Println("Connect Server Addr:%v!",tcpAddr)
 	this.Conn = conn
 
+	this.OnNewConnect(this)
+
 	return nil
 }
 
+func (this *TcpTransport) read(){
+	defer func() {
+		this.OnClosed()
+	}()
 
-func (this *TcpTransport) Read(){
 	for !this.IsStop(){
 		head := PakgeHead{}
 		headData := make([]byte, unsafe.Sizeof(PakgeHead{}))
 		_, err := io.ReadFull(this.Conn, headData)
 		if err != nil {
-			this.StopFlag = true
 			fmt.Println("IO Read Err:%v",err)
 			break
 		}
@@ -80,49 +83,62 @@ func (this *TcpTransport) Read(){
 		data := make([]byte,head.Len)
 		_, err = io.ReadFull(this.Conn, data)
 		if err != nil {
-			this.StopFlag = true
 			fmt.Println("IO Read Err:%v",err)
 			break
 		}
 
 		msg := this.protocol.Decode(head.Tag, data)
-		this.processor.Process(msg)
+		this.processor.Process(this,msg)
 	}
 }
 
-func (this *TcpTransport) Write(tag uint16, msg interface{}){
-	data := this.protocol.Encode(tag, msg)
+func (this *TcpTransport) write(){
+	defer func() {
+		this.Conn.Close()
+		this.OnClosed()
+	}()
 
-	_,err := this.Conn.Write(data)
-	if err != nil{
-		fmt.Println("Write Err:%v",err)
+	var data *[]byte
+	for !this.IsStop(){
+		select {
+		case data = <-this.cwrite:
+		}
+
+		_,err := this.Conn.Write(*data)
+		if err != nil{
+			fmt.Println("Write Err:%v",err)
+			break
+		}
+	}
+}
+
+func (this *TcpTransport)Send(tag uint16, msg interface{})error{
+	if this.IsStop(){
+		fmt.Println("Transport has been closed!!!")
+		return nil
 	}
 
-	//b := *((*[]byte)(unsafe.Pointer(&pakge.head)))
-	//_,err := this.Conn.Write(b)
-	//if err != nil{
-	//	fmt.Println("Write Err:%v",err)
-	//}
-	//
-	//_,err = this.Conn.Write(pakge.data)
-	//if err != nil{
-	//	fmt.Println("Write Err:%v",err)
-	//}
+	data := this.protocol.Encode(tag, msg)
+	select {
+	case this.cwrite <- &data:
+	default:
+		fmt.Println("write buf full!!!")
+		this.cwrite <- &data
+	}
+	return nil
 }
 
 func (this *TcpTransport) Close(){
 	this.Conn.Close()
-	this.StopFlag = true
+	this.StopFlag = 1
 }
 
 
 type TcpServer struct {
 	DefServer
 }
-var(
 
-)
-func NewTcpServer(netAddr string, protocol  Protocol, processor Processor) *TcpServer{
+func NewTcpServer(netAddr string, protocol  IProtocol, processor IProcessor) *TcpServer{
 	tcpServer := &TcpServer{DefServer:DefServer{NetType:TCP,NetAddr:netAddr,transport: NewTcpTransport(netAddr,protocol,processor,nil)}}
 
 	return tcpServer

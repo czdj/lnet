@@ -3,6 +3,7 @@ package lnet
 import (
 	"fmt"
 	"reflect"
+	"sync/atomic"
 )
 
 type MsgTypeMap struct {
@@ -37,8 +38,8 @@ type PakgeHead struct {
 	Len uint16
 }
 type Pakge struct {
-	head PakgeHead
-	data interface{}
+	//head PakgeHead
+	data []byte
 }
 
 type Message struct {
@@ -46,12 +47,15 @@ type Message struct {
 }
 
 //监听类，负责接收连接
-type Transport interface {
+type ITransport interface {
 	Listen() error
+	OnNewConnect(transport ITransport)
 	Connect() error
-	Read()
-	Write(tag uint16, msg interface{})
+	read()
+	write()
+	Send(tag uint16, msg interface{})error
 	Close()
+	OnClosed()
 	IsStop() bool
 }
 
@@ -60,54 +64,70 @@ type DefTransport struct{
 	NetType NetType
 	NetAddr string
 	PeerAddr string
-	StopFlag bool
+	StopFlag int32
+	cwrite chan *[]byte
 
-	protocol Protocol
-	processor Processor
+	protocol IProtocol
+	processor IProcessor
 }
 
 func (this *DefTransport) Listen() error{
 	return nil
 }
 
+func (this *DefTransport) OnNewConnect(transport ITransport){
+	go transport.read()
+	go transport.write()
+}
 func (this *DefTransport) Connect() error{
 	return nil
 }
 
-func (this *DefTransport) Read(){
+func (this *DefTransport) read(){
 
 }
 
-func (this *DefTransport) Write(tag uint16, msg interface{}){
+func (this *DefTransport) write(){
 
+}
+
+func (this *DefTransport)Send(tag uint16, msg interface{})error{
+	return nil
 }
 
 func (this *DefTransport) Close(){
 
 }
 
+func (this *DefTransport) OnClosed(){
+	if atomic.CompareAndSwapInt32(&this.StopFlag,0,1){
+		close(this.cwrite)
+		fmt.Println("connect closed !!")
+	}
+}
 func (this *DefTransport)IsStop() bool{
 	return false
 }
 
 
 //负责解析协议
-type Protocol interface {
+type IProtocol interface {
 	Encode(tag uint16, msg interface{}) []byte
 	Decode(tag uint16, data []byte) interface{}
 }
 
 //负责业务处理
-type Processor  interface {
-	Process(msg interface{})
+type IProcessor  interface {
+	Process(transport ITransport, msg interface{})
 }
 
 type DefProcessor struct {
-
+	transport ITransport
 }
 
-func (this *DefProcessor)Process(msg interface{}){
+func (this *DefProcessor)Process(transport ITransport, msg interface{}){
 	fmt.Println("process:%v",msg)
+	transport.Send(11,msg)
 }
 
 type Server interface {
@@ -118,7 +138,7 @@ type DefServer struct {
 	NetType NetType
 	NetAddr string
 
-	transport Transport
+	transport ITransport
 }
 //接受连接，每个连接对应一个结构，每个连接开一个goroution，每一个连接里处理读写消息
 func (this *DefServer) Start(){
