@@ -14,7 +14,17 @@ type TcpTransport struct {
 }
 
 func NewTcpTransport(netAddr string, timeout int, protocol  IProtocol, processor IProcessor,conn net.Conn) *TcpTransport{
-	return  &TcpTransport{DefTransport:DefTransport{NetAddr:netAddr,StopFlag:0,cwrite:make(chan *[]byte,64),timeout:timeout,lastTick:time.Now().Unix(),protocol:protocol,processor:processor},Conn:conn}
+	return  &TcpTransport{
+		DefTransport:DefTransport{
+			NetAddr:netAddr,
+			stopFlag:0,
+			cwrite:make(chan *[]byte,64),
+			timeout:timeout,
+			lastTick:time.Now().Unix(),
+			protocol:protocol,
+			processor:processor},
+		Conn:conn,
+	}
 }
 
 func (this *TcpTransport) Listen() error {
@@ -34,7 +44,7 @@ func (this *TcpTransport) Listen() error {
 		conn, err := listen.Accept();
 		if err != nil{
 			fmt.Println("tcp Accept err:%v!",err)
-			this.StopFlag = 1
+			this.stopFlag = 1
 			return err
 		}
 		tcpTransport := NewTcpTransport(this.NetAddr,DefMsgTimeout, this.protocol,this.processor,conn)
@@ -156,7 +166,7 @@ func (this *TcpTransport)Send(tag uint16, msg interface{})error{
 
 func (this *TcpTransport) Close(){
 	this.Conn.Close()
-	this.StopFlag = 1
+	this.stopFlag = 1
 }
 
 
@@ -165,7 +175,29 @@ type TcpServer struct {
 }
 
 func NewTcpServer(netAddr string, protocol  IProtocol, processor IProcessor) *TcpServer{
-	tcpServer := &TcpServer{DefServer:DefServer{NetType:TCP,NetAddr:netAddr,transport: NewTcpTransport(netAddr,DefMsgTimeout,protocol,processor,nil)}}
+	tcpServer := &TcpServer{
+		DefServer:DefServer{
+			NetType:TCP,
+			NetAddr:netAddr,
+			transport: NewTcpTransport(netAddr,DefMsgTimeout,protocol,processor,nil),
+		},
+	}
 
 	return tcpServer
+}
+
+type TcpClient struct {
+	DefClient
+}
+
+func NewTcpClient(netAddr string, protocol  IProtocol, processor IProcessor) *TcpClient{
+	tcpClient := &TcpClient{
+		DefClient:DefClient{
+			NetType:TCP,
+			NetAddr:netAddr,
+			transport: NewTcpTransport(netAddr,DefMsgTimeout,protocol,processor,nil),
+		},
+	}
+
+	return tcpClient
 }

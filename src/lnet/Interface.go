@@ -2,54 +2,11 @@ package lnet
 
 import (
 	"fmt"
-	"reflect"
 	"sync/atomic"
 	"time"
 )
 
-var  DefMsgTimeout int  = 2
-
-type MsgTypeMap struct {
-	msgTypeMap map[uint16]reflect.Type
-}
-func (this *MsgTypeMap)Register(tag uint16,msg interface{}){
-	msgType := reflect.TypeOf(msg)
-	this.msgTypeMap[tag] = msgType
-}
-
-func (this *MsgTypeMap)NewMsg(tag uint16)interface{}{
-	 msgType,err := this.msgTypeMap[tag]
-	if err == false{
-		fmt.Println("Msg Type Err!")
-		return nil
-	}
-	 msg := reflect.New(msgType).Interface()
-	return msg
-}
-
-var MsgTypeInfo MsgTypeMap = MsgTypeMap{msgTypeMap:make(map[uint16]reflect.Type)}
-
-
-type NetType int
-const (
-	TCP NetType = iota
-	UDP
-	WebSocket
-)
-type PakgeHead struct {
-	Tag uint16
-	Len uint16
-}
-type Pakge struct {
-	//head PakgeHead
-	data []byte
-}
-
-type Message struct {
-	Data string
-}
-
-//监听类，负责接收连接
+//负责网络相关功能的处理
 type ITransport interface {
 	Listen() error
 	OnNewConnect(transport ITransport)
@@ -68,7 +25,7 @@ type DefTransport struct{
 	NetType NetType
 	NetAddr string
 	PeerAddr string
-	StopFlag int32
+	stopFlag int32
 	cwrite chan *[]byte
 	timeout       int //传输超时
 	lastTick      int64
@@ -107,13 +64,13 @@ func (this *DefTransport) Close(){
 }
 
 func (this *DefTransport) OnClosed(){
-	if atomic.CompareAndSwapInt32(&this.StopFlag,0,1){
+	if atomic.CompareAndSwapInt32(&this.stopFlag,0,1){
 		close(this.cwrite)
 		fmt.Println("connect closed !!")
 	}
 }
 func (this *DefTransport)IsStop() bool{
-	return this.StopFlag == 1
+	return this.stopFlag == 1
 }
 
 func (this *DefTransport)isTimeout(tick *time.Timer) bool{
@@ -138,7 +95,7 @@ type IProcessor  interface {
 }
 
 type DefProcessor struct {
-	transport ITransport
+
 }
 
 func (this *DefProcessor)Process(transport ITransport, msg interface{}){
@@ -159,4 +116,24 @@ type DefServer struct {
 //接受连接，每个连接对应一个结构，每个连接开一个goroution，每一个连接里处理读写消息
 func (this *DefServer) Start(){
 	this.transport.Listen()
+}
+
+type Client interface {
+	Connect() error
+	Send(tag uint16, msg interface{})error
+}
+
+type DefClient struct {
+	NetType NetType
+	NetAddr string
+
+	transport ITransport
+}
+//接受连接，每个连接对应一个结构，每个连接开一个goroution，每一个连接里处理读写消息
+func (this *DefClient) Connect() error{
+	return this.transport.Connect()
+}
+
+func (this *DefClient) Send(tag uint16, msg interface{})error{
+	return this.transport.Send(tag,msg)
 }

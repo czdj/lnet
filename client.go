@@ -6,16 +6,17 @@ import (
 )
 
 func main() {
-	lnet.MsgTypeInfo.Register(11,lnet.Message{})
+	lnet.MsgTypeInfo.Register(11,lnet.MessageTest{})
 
 	processor := &lnet.DefProcessor{}
 	protocol := &lnet.MyProtocol{}
-	transport := lnet.NewTcpTransport("127.0.0.1:9000",lnet.DefMsgTimeout, protocol,processor,nil)
-	transport.Connect()
-	msg := &lnet.Message{Data:"zzzzz"}
+	client :=  lnet.NewTcpClient("127.0.0.1:9000", protocol,processor)
+	client.Connect()
+
+	msg := &lnet.MessageTest{Data:"zzzzz"}
 	//msg1 := "bbbbbbbb"
 	for {
-		transport.Send(11,msg)
+		client.Send(11,msg)
 		//transport.Send(12,msg1)
 		time.Sleep(1 * time.Second)
 	}
