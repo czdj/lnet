@@ -9,7 +9,7 @@ func main() {
 	lnet.MsgTypeInfo.Register(11,lnet.MessageTest{})
 
 	processor := &lnet.DefProcessor{}
-	protocol := &lnet.MyProtocol{}
+	protocol := &lnet.GobProtocol{}
 	client :=  lnet.NewTcpClient("127.0.0.1:9000", protocol,processor)
 	client.Connect()
 

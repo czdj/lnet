@@ -40,7 +40,7 @@ func (this *TcpTransport) Listen() error {
 	}
 	fmt.Println("TcpServer is listening addr:%v!",tcpAddr)
 
-	for !this.IsStop(){
+	for !this.isStop(){
 		conn, err := listen.Accept();
 		if err != nil{
 			fmt.Println("tcp Accept err:%v!",err)
@@ -48,7 +48,7 @@ func (this *TcpTransport) Listen() error {
 			return err
 		}
 		tcpTransport := NewTcpTransport(this.NetAddr,DefMsgTimeout, this.protocol,this.processor,conn)
-		this.OnNewConnect(tcpTransport)
+		this.onNewConnect(tcpTransport)
 	}
 
 	return nil
@@ -69,17 +69,17 @@ func (this *TcpTransport) Connect() error{
 	fmt.Println("Connect Server Addr:%v!",tcpAddr)
 	this.Conn = conn
 
-	this.OnNewConnect(this)
+	this.onNewConnect(this)
 
 	return nil
 }
 
 func (this *TcpTransport) read(){
 	defer func() {
-		this.OnClosed()
+		this.onClosed()
 	}()
 
-	for !this.IsStop(){
+	for !this.isStop(){
 		head := PakgeHead{}
 		headData := make([]byte, unsafe.Sizeof(PakgeHead{}))
 		_, err := io.ReadFull(this.Conn, headData)
@@ -108,7 +108,7 @@ func (this *TcpTransport) read(){
 func (this *TcpTransport) write(){
 	defer func() {
 		this.Conn.Close()
-		this.OnClosed()
+		this.onClosed()
 
 		if err := recover(); err != nil {
 			fmt.Println("Write panic:%v",err)
@@ -118,12 +118,12 @@ func (this *TcpTransport) write(){
 
 	var data *[]byte
 	tick := time.NewTimer(time.Duration(this.timeout) * time.Second)
-	for !this.IsStop(){
+	for !this.isStop(){
 		select {
 		case data = <-this.cwrite:
 		case <-tick.C:
 			if this.isTimeout(tick){
-				this.OnClosed()
+				this.onClosed()
 			}
 		}
 
@@ -149,7 +149,7 @@ func (this *TcpTransport)Send(tag uint16, msg interface{})error{
 		}
 	}()
 
-	if this.IsStop(){
+	if this.isStop(){
 		fmt.Println("Transport has been closed!!!")
 		return nil
 	}

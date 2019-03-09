@@ -4,7 +4,7 @@ import "lnet"
 
 func main() {
 	processor := &lnet.DefProcessor{}
-	protocol := &lnet.MyProtocol{}
+	protocol := &lnet.GobProtocol{}
 	lnet.MsgTypeInfo.Register(11,lnet.MessageTest{})
 	lnet.MsgTypeInfo.Register(12,"")
 

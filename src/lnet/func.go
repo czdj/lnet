@@ -7,9 +7,11 @@ import (
 
 var  DefMsgTimeout int  = 180
 
+//要处理的消息，需要在此处注册
 type MsgTypeMap struct {
 	msgTypeMap map[uint16]reflect.Type
 }
+
 func (this *MsgTypeMap)Register(tag uint16,msg interface{}){
 	msgType := reflect.TypeOf(msg)
 	this.msgTypeMap[tag] = msgType
@@ -47,7 +49,7 @@ type Pakge struct {
 	data []byte
 }
 
-//消息类型
+//自定义消息类型
 type MessageTest struct {
 	Data string
 }

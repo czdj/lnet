@@ -9,14 +9,14 @@ import (
 //负责网络相关功能的处理
 type ITransport interface {
 	Listen() error
-	OnNewConnect(transport ITransport)
 	Connect() error
+	onNewConnect(transport ITransport)
 	read()
 	write()
 	Send(tag uint16, msg interface{})error
 	Close()
-	OnClosed()
-	IsStop() bool
+	onClosed()
+	isStop() bool
 	isTimeout(tick *time.Timer) bool
 }
 
@@ -38,7 +38,7 @@ func (this *DefTransport) Listen() error{
 	return nil
 }
 
-func (this *DefTransport) OnNewConnect(transport ITransport){
+func (this *DefTransport) onNewConnect(transport ITransport){
 	go transport.read()
 	go transport.write()
 }
@@ -63,13 +63,13 @@ func (this *DefTransport) Close(){
 
 }
 
-func (this *DefTransport) OnClosed(){
+func (this *DefTransport) onClosed(){
 	if atomic.CompareAndSwapInt32(&this.stopFlag,0,1){
 		close(this.cwrite)
 		fmt.Println("connect closed !!")
 	}
 }
-func (this *DefTransport)IsStop() bool{
+func (this *DefTransport)isStop() bool{
 	return this.stopFlag == 1
 }
 

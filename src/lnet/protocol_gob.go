@@ -7,11 +7,11 @@ import (
 	"unsafe"
 )
 
-type MyProtocol struct {
+type GobProtocol struct {
 
 }
 
-func (this *MyProtocol) Encode(tag uint16, msg interface{}) []byte{
+func (this *GobProtocol) Encode(tag uint16, msg interface{}) []byte{
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	if err := enc.Encode(msg); err != nil {
@@ -31,7 +31,7 @@ func (this *MyProtocol) Encode(tag uint16, msg interface{}) []byte{
 	return data
 }
 
-func (this *MyProtocol) Decode(tag uint16, data []byte) interface{}{
+func (this *GobProtocol) Decode(tag uint16, data []byte) interface{}{
 	buf := bytes.Buffer{}
 	buf.Write(data)
 	dec := gob.NewDecoder(&buf)
