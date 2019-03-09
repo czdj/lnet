@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
 	"unsafe"
 )
 
@@ -12,8 +13,8 @@ type TcpTransport struct {
 	Conn net.Conn
 }
 
-func NewTcpTransport(netAddr string, protocol  IProtocol, processor IProcessor,conn net.Conn) *TcpTransport{
-	return  &TcpTransport{DefTransport:DefTransport{NetAddr:netAddr,StopFlag:0,cwrite:make(chan *[]byte,64),protocol:protocol,processor:processor},Conn:conn}
+func NewTcpTransport(netAddr string, timeout int, protocol  IProtocol, processor IProcessor,conn net.Conn) *TcpTransport{
+	return  &TcpTransport{DefTransport:DefTransport{NetAddr:netAddr,StopFlag:0,cwrite:make(chan *[]byte,64),timeout:timeout,lastTick:time.Now().Unix(),protocol:protocol,processor:processor},Conn:conn}
 }
 
 func (this *TcpTransport) Listen() error {
@@ -36,7 +37,7 @@ func (this *TcpTransport) Listen() error {
 			this.StopFlag = 1
 			return err
 		}
-		tcpTransport := NewTcpTransport(this.NetAddr,this.protocol,this.processor,conn)
+		tcpTransport := NewTcpTransport(this.NetAddr,DefMsgTimeout, this.protocol,this.processor,conn)
 		this.OnNewConnect(tcpTransport)
 	}
 
@@ -87,6 +88,8 @@ func (this *TcpTransport) read(){
 			break
 		}
 
+		this.lastTick = time.Now().Unix()
+
 		msg := this.protocol.Decode(head.Tag, data)
 		this.processor.Process(this,msg)
 	}
@@ -96,12 +99,26 @@ func (this *TcpTransport) write(){
 	defer func() {
 		this.Conn.Close()
 		this.OnClosed()
+
+		if err := recover(); err != nil {
+			fmt.Println("Write panic:%v",err)
+			return
+		}
 	}()
 
 	var data *[]byte
+	tick := time.NewTimer(time.Duration(this.timeout) * time.Second)
 	for !this.IsStop(){
 		select {
 		case data = <-this.cwrite:
+		case <-tick.C:
+			if this.isTimeout(tick){
+				this.OnClosed()
+			}
+		}
+
+		if data == nil{
+			continue
 		}
 
 		_,err := this.Conn.Write(*data)
@@ -109,10 +126,19 @@ func (this *TcpTransport) write(){
 			fmt.Println("Write Err:%v",err)
 			break
 		}
+		data = nil
+		this.lastTick = time.Now().Unix()
 	}
 }
 
 func (this *TcpTransport)Send(tag uint16, msg interface{})error{
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("Send panic:%v",err)
+			return
+		}
+	}()
+
 	if this.IsStop(){
 		fmt.Println("Transport has been closed!!!")
 		return nil
@@ -139,7 +165,7 @@ type TcpServer struct {
 }
 
 func NewTcpServer(netAddr string, protocol  IProtocol, processor IProcessor) *TcpServer{
-	tcpServer := &TcpServer{DefServer:DefServer{NetType:TCP,NetAddr:netAddr,transport: NewTcpTransport(netAddr,protocol,processor,nil)}}
+	tcpServer := &TcpServer{DefServer:DefServer{NetType:TCP,NetAddr:netAddr,transport: NewTcpTransport(netAddr,DefMsgTimeout,protocol,processor,nil)}}
 
 	return tcpServer
 }

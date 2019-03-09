@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"reflect"
 	"sync/atomic"
+	"time"
 )
+
+var  DefMsgTimeout int  = 2
 
 type MsgTypeMap struct {
 	msgTypeMap map[uint16]reflect.Type
@@ -57,6 +60,7 @@ type ITransport interface {
 	Close()
 	OnClosed()
 	IsStop() bool
+	isTimeout(tick *time.Timer) bool
 }
 
 type DefTransport struct{
@@ -66,6 +70,8 @@ type DefTransport struct{
 	PeerAddr string
 	StopFlag int32
 	cwrite chan *[]byte
+	timeout       int //传输超时
+	lastTick      int64
 
 	protocol IProtocol
 	processor IProcessor
@@ -79,6 +85,7 @@ func (this *DefTransport) OnNewConnect(transport ITransport){
 	go transport.read()
 	go transport.write()
 }
+
 func (this *DefTransport) Connect() error{
 	return nil
 }
@@ -106,9 +113,18 @@ func (this *DefTransport) OnClosed(){
 	}
 }
 func (this *DefTransport)IsStop() bool{
-	return false
+	return this.StopFlag == 1
 }
 
+func (this *DefTransport)isTimeout(tick *time.Timer) bool{
+	left := int(time.Now().Unix() - this.lastTick)
+	if left < this.timeout  {
+		tick.Reset(time.Second * time.Duration(this.timeout))
+		return false
+	}
+	fmt.Println("msgque close because timeout wait:%v timeout:%v", left, this.timeout)
+	return true
+}
 
 //负责解析协议
 type IProtocol interface {
@@ -127,7 +143,7 @@ type DefProcessor struct {
 
 func (this *DefProcessor)Process(transport ITransport, msg interface{}){
 	fmt.Println("process:%v",msg)
-	transport.Send(11,msg)
+	//transport.Send(11,msg)
 }
 
 type Server interface {
