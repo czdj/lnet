@@ -1,0 +1,3 @@
+[submodule "src/golang.org/x/net"]
+	path = src/golang.org/x/net
+	url = ../../golang/net
