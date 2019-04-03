@@ -1,3 +1,6 @@
 [submodule "src/golang.org/x/net"]
 	path = src/golang.org/x/net
 	url = ../../golang/net
+[submodule "src/github.com/gorilla/websocket"]
+	path = src/github.com/gorilla/websocket
+	url = ../../gorilla/websocket
