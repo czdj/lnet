@@ -99,8 +99,9 @@ type DefProcessor struct {
 }
 
 func (this *DefProcessor)Process(transport ITransport, msg interface{}){
-	fmt.Println("process:%v",msg)
-	//transport.Send(11,msg)
+	t := transport.(*WebsocketTransport)
+	fmt.Println("process:%v,%v",t.Conn.RemoteAddr(),msg)
+	transport.Send(11,msg)
 }
 
 type Server interface {
@@ -115,7 +116,7 @@ type DefServer struct {
 }
 //接受连接，每个连接对应一个结构，每个连接开一个goroution，每一个连接里处理读写消息
 func (this *DefServer) Start(){
-	this.transport.Listen()
+	go this.transport.Listen()
 }
 
 type Client interface {

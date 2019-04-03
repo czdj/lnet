@@ -2,8 +2,7 @@ package lnet
 
 import (
 	"fmt"
-	"golang.org/x/net/websocket"
-	"io"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
 	"unsafe"
@@ -13,6 +12,7 @@ import (
 type WebsocketTransport struct {
 	DefTransport
 	Conn *websocket.Conn
+	Upgrader *websocket.Upgrader
 }
 
 func NewWebsocketTransport(netAddr string, timeout int, protocol  IProtocol, processor IProcessor,conn *websocket.Conn) *WebsocketTransport{
@@ -26,30 +26,35 @@ func NewWebsocketTransport(netAddr string, timeout int, protocol  IProtocol, pro
 			protocol:protocol,
 			processor:processor},
 		Conn:conn,
+		Upgrader:&websocket.Upgrader{},
 	}
 }
 
-func (this *WebsocketTransport) websocketConnHandler(conn *websocket.Conn) {
+func (this *WebsocketTransport) websocketConnHandler(w http.ResponseWriter, r *http.Request){
+	conn, err := this.Upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		fmt.Println("upgrade:", err)
+		return
+	}
+
 	WebsocketTransport := NewWebsocketTransport(this.NetAddr,DefMsgTimeout, this.protocol,this.processor,conn)
 	this.onNewConnect(WebsocketTransport)
 }
 
 func (this *WebsocketTransport) Listen() error {
-
-	http.Handle("/ws", websocket.Handler(this.websocketConnHandler));
+	http.HandleFunc("/ws",this.websocketConnHandler);
+	fmt.Println("WebsocketServer is listening addr:%v!",this.NetAddr)
 	err := http.ListenAndServe(this.NetAddr, nil);
 	if err != nil{
 		fmt.Println("Websocket Listen err:%v!",err)
 		return err
 	}
 
-	fmt.Println("WebsocketServer is listening addr:%v!",this.NetAddr)
-
 	return nil
 }
 
 func (this *WebsocketTransport) Connect() error{
-	conn, err := websocket.Dial(this.NetAddr, "", "");
+	conn, _,err := websocket.DefaultDialer.Dial(this.NetAddr, nil);
 	if err != nil{
 		fmt.Println("Connect err:%v!",err)
 		return err
@@ -69,27 +74,17 @@ func (this *WebsocketTransport) read(){
 	}()
 
 	for !this.isStop(){
-		head := PakgeHead{}
-		headData := make([]byte, unsafe.Sizeof(PakgeHead{}))
-		_, err := io.ReadFull(this.Conn, headData)
+		_, data, err := this.Conn.ReadMessage()
 		if err != nil {
 			fmt.Println("IO Read Err:%v",err)
 			break
 		}
-		pakgeHead := (*PakgeHead)(unsafe.Pointer(&headData[0]))
-		head.Len = pakgeHead.Len
-		head.Tag = pakgeHead.Tag
-
-		data := make([]byte,head.Len)
-		_, err = io.ReadFull(this.Conn, data)
-		if err != nil {
-			fmt.Println("IO Read Err:%v",err)
-			break
-		}
-
 		this.lastTick = time.Now().Unix()
 
-		msg := this.protocol.Decode(head.Tag, data)
+		pakgeHead := (*PakgeHead)(unsafe.Pointer(&data[0]))
+		tag := pakgeHead.Tag
+		data = data[unsafe.Sizeof(PakgeHead{}):]
+		msg := this.protocol.Decode(tag, data)
 		this.processor.Process(this,msg)
 	}
 }
@@ -120,7 +115,7 @@ func (this *WebsocketTransport) write(){
 			continue
 		}
 
-		_,err := this.Conn.Write(*data)
+		err := this.Conn.WriteMessage(websocket.BinaryMessage,*data)
 		if err != nil{
 			fmt.Println("Write Err:%v",err)
 			break
