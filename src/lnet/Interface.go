@@ -13,7 +13,7 @@ type ITransport interface {
 	onNewConnect(transport ITransport)
 	read()
 	write()
-	Send(tag uint16, msg interface{})error
+	Send(msg interface{})error
 	Close()
 	onClosed()
 	isStop() bool
@@ -85,8 +85,8 @@ func (this *DefTransport)isTimeout(tick *time.Timer) bool{
 
 //负责解析协议
 type IProtocol interface {
-	Encode(tag uint16, msg interface{}) []byte
-	Decode(tag uint16, data []byte) interface{}
+	Marshal(msg interface{})([]byte,error)
+	Unmarshal(data []byte, v interface{}) error
 }
 
 //负责业务处理
@@ -99,9 +99,9 @@ type DefProcessor struct {
 }
 
 func (this *DefProcessor)Process(transport ITransport, msg interface{}){
-	t := transport.(*WebsocketTransport)
+	t := transport.(*TcpTransport)
 	fmt.Println("process:%v,%v",t.Conn.RemoteAddr(),msg)
-	transport.Send(12,msg)
+	transport.Send(msg)
 }
 
 type Server interface {
@@ -121,7 +121,7 @@ func (this *DefServer) Start(){
 
 type Client interface {
 	Connect() error
-	Send(tag uint16, msg interface{})error
+	Send(msg interface{})error
 }
 
 type DefClient struct {
@@ -135,6 +135,6 @@ func (this *DefClient) Connect() error{
 	return this.transport.Connect()
 }
 
-func (this *DefClient) Send(tag uint16, msg interface{})error{
-	return this.transport.Send(tag,msg)
+func (this *DefClient) Send(msg interface{})error{
+	return this.transport.Send(msg)
 }

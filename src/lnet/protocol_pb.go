@@ -2,45 +2,32 @@ package lnet
 
 import (
 	"github.com/golang/protobuf/proto"
-	"unsafe"
 )
 
 type PbProtocol struct {
 
 }
 
-func (this *PbProtocol) Encode(tag uint16, msg interface{}) []byte{
+func (this *PbProtocol) Marshal(msg interface{})([]byte,error){
 	pb, ok := msg.(proto.Message)
 	if !ok {
-		return nil
+		return nil,NewError("proto类型错误",0)
 	}
 
-	encodeData,err := proto.Marshal(pb)
+	data,err := proto.Marshal(pb)
 	if err != nil{
-		return nil
+		return nil, NewError("proto编码失败",0)
 	}
 
-	head := &PakgeHead{}
-	head.Tag = tag
-	head.Len = uint16(len(encodeData))
-
-	data := make([]byte,unsafe.Sizeof(PakgeHead{}))
-	ptr := (*PakgeHead)(unsafe.Pointer(&data[0]))
-	ptr.Len = head.Len
-	ptr.Tag = head.Tag
-	data = append(data,encodeData...)
-
-	return data
+	return data, nil
 }
 
-func (this *PbProtocol) Decode(tag uint16, data []byte) interface{} {
-	msg := MsgTypeInfo.NewMsg(tag)
-	pb, ok := msg.(proto.Message)
+func (this *PbProtocol) Unmarshal(data []byte, v interface{}) error{
+	pb, ok := v.(proto.Message)
 	if !ok {
-		return nil
+		return NewError("proto类型错误",0)
 	}
-	proto.Unmarshal(data, pb)
 
-	return pb
+	return proto.Unmarshal(data, pb)
 }
 

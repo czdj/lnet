@@ -84,7 +84,10 @@ func (this *WebsocketTransport) read(){
 		pakgeHead := (*PakgeHead)(unsafe.Pointer(&data[0]))
 		tag := pakgeHead.Tag
 		data = data[unsafe.Sizeof(PakgeHead{}):]
-		msg := this.protocol.Decode(tag, data)
+
+		msg := MsgTypeInfo.NewMsg(tag)
+		this.protocol.Unmarshal(data,msg)
+
 		this.processor.Process(this,msg)
 	}
 }
@@ -125,7 +128,7 @@ func (this *WebsocketTransport) write(){
 	}
 }
 
-func (this *WebsocketTransport)Send(tag uint16, msg interface{})error{
+func (this *WebsocketTransport)Send(msg interface{})error{
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println("Send panic:%v",err)
@@ -138,7 +141,21 @@ func (this *WebsocketTransport)Send(tag uint16, msg interface{})error{
 		return nil
 	}
 
-	data := this.protocol.Encode(tag, msg)
+	encodeData, err := this.protocol.Marshal(msg)
+	if err != nil{
+		return err
+	}
+
+	head := &PakgeHead{}
+	head.Tag = MsgTypeInfo.Tag(msg)
+	head.Len = uint16(len(encodeData))
+
+	data := make([]byte,unsafe.Sizeof(PakgeHead{}))
+	ptr := (*PakgeHead)(unsafe.Pointer(&data[0]))
+	ptr.Len = head.Len
+	ptr.Tag = head.Tag
+	data = append(data,encodeData...)
+
 	select {
 	case this.cwrite <- &data:
 	default:
