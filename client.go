@@ -2,22 +2,24 @@ package main
 
 import (
 	"lnet"
+	"proto/pb"
 	"time"
 )
 
 func main1() {
 	lnet.MsgTypeInfo.Register(11,lnet.MessageTest{})
+	lnet.MsgTypeInfo.Register(12,pb.GameItem{})
 
 	processor := &lnet.DefProcessor{}
-	protocol := &lnet.GobProtocol{}
+	protocol := &lnet.PbProtocol{}
 	//client :=  lnet.NewTcpClient("127.0.0.1:9000", protocol,processor)
-	client :=  lnet.NewWebsocketClient("127.0.0.1:9000", protocol,processor)
+	client :=  lnet.NewWebsocketClient("ws://127.0.0.1:9000/ws", protocol,processor)
 	client.Connect()
 
-	msg := &lnet.MessageTest{Data:"zzzzz"}
+	msg := &pb.GameItem{Id:1,Type:2,Count:3}
 	//msg1 := "bbbbbbbb"
 	for {
-		client.Send(11,msg)
+		client.Send(12,msg)
 		//transport.Send(12,msg1)
 		time.Sleep(1 * time.Second)
 	}

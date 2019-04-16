@@ -101,7 +101,7 @@ type DefProcessor struct {
 func (this *DefProcessor)Process(transport ITransport, msg interface{}){
 	t := transport.(*WebsocketTransport)
 	fmt.Println("process:%v,%v",t.Conn.RemoteAddr(),msg)
-	transport.Send(11,msg)
+	transport.Send(12,msg)
 }
 
 type Server interface {
