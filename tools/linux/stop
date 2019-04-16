@@ -1,0 +1,28 @@
+#!/bin/sh
+SERVERLIST='auth_1  battle_3000 match_2001 logic_101 league_4000'
+count=1
+for serv in $SERVERLIST
+do
+	if [ ${count} -eq 1 ]
+	then
+		echo -n "stoping bin/$serv "
+		count=$[count-1]
+	fi
+
+	ps ux | grep "$serv" | sed -e "/grep/d"|awk '{print $2}' |xargs kill -2 & >./null
+#        ps ux|grep "$serv -s" |sed -e "/grep/d"|awk '{print $2}'|xargs kill -2 &>/dev/null
+        while test -f stop
+        do
+                echo -n "."
+		tmpcount=`ps ux|grep 'xserver'|grep "$serv" |grep -v "bash"|wc -l`
+                if [ $tmpcount -eq 0 ] 
+                then
+                        break
+                fi
+                sleep 0.1
+        done
+        echo "ok"
+	count=1
+done
+
+

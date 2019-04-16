@@ -1,0 +1,363 @@
+syntax = "proto2";
+import "const_define.proto";
+
+// 服务器时间
+message ServerTime
+{
+	optional int64 timestamp = 1;          //服务器时间戳
+	optional int32 year = 2;               //服务器年份
+	optional int32 month = 3;              //服务器月份
+	optional int32 day = 4;                //服务器日期
+	optional int32 hour = 5;               //服务器小时数
+	optional int32 minute = 6;             //服务器分钟数
+	optional int32 second = 7;             //服务器秒数
+	optional int32 timezone = 8;           //服务器时区
+}
+
+message GameItem
+{
+	optional int32 id = 1;
+	optional int32 type =2;
+	optional int32 count = 3;
+	optional int64 obtainTime = 4;
+	optional string name =5;
+}
+
+//时间记录
+message TimeRecord
+{
+	optional int64 lastSign         = 3;  //最后签到时间戳
+
+	optional int64 lastGetPVPResult = 6; //最后获取pvp战斗结果时间
+	optional int64 lastWeekRec = 7;      //每周限定最后更新时间戳
+	optional int32 totalTime = 8;        //总的在线时长
+}
+
+//次数记录
+message NumberRecord
+{
+	optional int32 elo              = 1;	//pvp elo值
+	optional int32 normWin          = 2; 	//普通匹配连胜次数
+	optional int32 totalSignIn      = 3;    //玩家本月累计签到次数
+	optional int32 weekTotalSign    = 4; 	//gamer week sign number
+	optional int32 weekGoldGet      = 5;   //玩家每周限制获取金币已获得数据
+	optional int32 weekExpGet       = 6;   //玩家每周限制获取经验已获得数据
+
+}
+
+message WXInfo
+{
+	optional string avatar_url = 1;
+	optional string city = 2;
+	optional int32 gender = 3;
+	optional string open_id = 4;
+	optional string language = 5;
+	optional string nick_name = 6;
+	optional string province = 7;
+	optional string union_id = 8;
+	optional string country = 9;
+	optional string session_id = 10;
+	optional string sign = 11;
+}
+
+
+//玩家主信息
+message GamerMain
+{
+	optional int32       id         = 1;    //玩家id
+	optional string		 uid		   = 2;	  //玩家uid
+	optional int32       lsid       = 3;	//玩家所属逻辑服id
+	optional int32       psid       = 4;	//所在物理服id
+	optional GamerStatus       state      = 5;	//玩家状态, 仅用作客户端显示使用
+	optional string      name       = 6;    //玩家姓名
+	optional int32       level      = 7;	//玩家等级
+	optional string      session    = 8;	//快速重连session
+	optional int64 		create 	   = 9;  //建立时间
+	optional int64 		lastLogin  = 10;  //最后登陆时间
+	optional int64 		lastLogout = 11;  //最后下线时间
+	optional int32  	typeId 		= 12;//角色类型
+	optional int32      icon = 13;
+	optional int32      exp = 14;
+	optional string     pvpSession = 15;
+	optional string     avatar = 16;
+	optional int32     leagueId = 17;//联盟id
+	optional bool      isNewbie = 18;//是否是新手
+}
+
+message GamerMini
+{
+	optional int32 id     = 1;  //玩家id
+	optional string name  = 2;  //玩家姓名
+	optional int32 level  = 3;	//玩家等级
+	optional int32 lsid   = 4;	//玩家服务器
+	optional string avatar = 16;
+}
+
+//好友请求
+message GamerFriendRequest
+{
+	optional int32 id = 1;		//对方id
+	optional string msg = 2;		//对对方说的话
+	optional int64 time = 3;		//时间
+	optional GamerMini gamerInfo = 5;
+}
+
+//拉黑的玩家
+message GamerBlack
+{
+	optional int32 id = 1;	//玩家id
+}
+
+
+message GamerFriend
+{
+	optional int32 id = 1;
+	optional int64 time = 2;		//时间
+	optional GamerMini gamerInfo = 5;
+}
+
+message ChatData
+{
+	optional int32 from = 1; //来自谁
+	optional int64 time = 2;		//时间
+	optional string msg = 3;
+	optional int32 channel = 4;
+	optional GamerMini gamerInfo = 5;
+}
+
+//邮件
+message Mail
+{
+	optional string id = 1;							//邮件Id
+	optional MailType mailType = 2; 					//邮件类型
+	optional int64 time = 3;							//邮件发送时间
+	optional string theme = 4;						//邮件主题
+	optional string msg = 5;							//邮件内容
+	repeated GameItem attachments = 6;		//附件
+	optional MailState state = 7;
+	optional int32 serverId = 9;						//服务器id
+	optional int32 senderId = 10;					//发送者Id
+	optional int32 level = 11;                       // 限制接收等级
+	optional int64 endTime = 12;                     //到期时间
+	optional int32 isDel = 13;                       //是否能够一键删除(0不可,1可以)
+	optional int32 cfgId = 14;                       //邮件配置id
+	optional bool save = 15;                         //全局邮件是否存入玩家数据库中
+	optional GamerMini gamerInfo = 16;
+}
+
+message GamerMatch
+{
+	optional GamerMini mini = 1;
+	optional bool ai = 2;
+}
+
+message MatchInfo
+{
+	optional string session = 1;
+	optional int64 time = 2;
+	optional string addr = 3;
+	optional int32 frameDelta = 4;
+	optional int32 minFrameDelta = 5;
+	optional int32 matchTime = 6;
+	optional int32 inputDelta = 7;
+	optional int32 pvpType = 8;
+	optional bool threadRecv = 9;
+	repeated GamerMatch gamers = 100;
+}
+
+message PVPInput
+{
+	optional int32 id = 1;
+	optional int32 yaw = 2;
+	optional int32 btn = 3;
+	optional int32 pos = 4;
+	optional int32 talk = 5;
+}
+
+message PVPFrame
+{
+	optional int32 delta = 1;
+	optional int32 frame = 2;
+	optional bool end = 3;
+	repeated PVPInput inputs = 100;
+}
+
+message PVPFrames
+{
+	repeated PVPFrame frames = 1;
+}
+
+message PVPResult
+{
+	repeated int32               kills    = 1;
+	repeated int32               length  = 2;
+	optional int64                        time    = 3;   //战斗开始时间
+	repeated int32               gone    = 4;   //逃跑玩家
+	optional int32                        version = 5;   //战斗版本
+	optional MatchInfo                    matchInfo   = 101;	//服务器填充
+	repeated PVPFrame            frames  = 102; //服务器填充
+	optional string                       md5     = 103;	//服务器填充
+}
+
+message RankLength
+{
+	optional int32 id = 1;
+	optional int32 length = 2;
+	optional int32 rank = 3;
+	optional GamerMini mini = 4;
+}
+
+//艺人
+message Actor
+{
+	optional int32 id = 1;
+	optional string name = 2;
+	optional int32 level = 3;
+	optional int32 star = 4;
+	optional int32 exp = 5;
+	optional int32 bulidId = 6;
+}
+
+//建筑信息
+message BuildInfo
+{
+	optional int32 buildId = 1; //建筑levelId
+	optional int32 buildType = 2; //建筑类型
+	optional int32 buildLevel =3; // 建筑等级
+	optional int64 endTime =4;//建筑升级结束时间
+	optional BuildState state =5;//建筑状态
+	optional int32 breakLevelMax = 6;//突破等级上限
+	optional BuildProduct productInfo =7;//建筑产出
+	repeated BuildActorCell actorCell = 8;//艺人槽位
+}
+
+message BuildProduct
+{
+	optional int64 startTime =1;//时间
+	optional int32 notGetNum =2;//未领取数量
+}
+
+message BuildActorCell
+{
+	optional int32 cellId = 1;//槽位
+	optional int32 actorId =2;//进驻艺人id
+}
+
+//情报
+message Intelligence
+{
+	optional int32 id = 1;
+	optional int32 count = 2;
+	optional int64 obtainTime = 3;//只有第一次获取该情报时赋值
+}
+
+
+
+//*************************************拍摄系统 start *************************************************\\
+
+
+
+// 拍摄--剧本
+message StudioStory
+{
+	optional StudioStoryType    storyType   = 1;                //剧本类型 （普通本、金本）
+	optional int32              storyId     = 2;                //剧本ID
+	optional string             storyName   = 3;                //剧本名称,重命名了才发
+	optional int32              expect      = 4;                //期待值
+	optional int32              eventNum    = 5;                //事件收集数量
+	optional int32              season      = 6;                //剧本季数
+	optional int32              episode     = 7;                //剧本期数
+}
+
+// 拍摄--艺人
+message StudioActor
+{
+	optional int32                           storyCharactersId   = 1;                            //艺人槽位ID
+	optional int32                           actorId             = 2;                            //艺人ID
+	optional int32                           cost                = 3;                            //消耗行动力
+	optional StudioActorState                actorState          = 4;                            //艺人状态 （普通、助阵、最匹配）
+	optional bool                            isMvp               = 5;                            //是否是MVP
+	repeated int32                  matchingLabels      = 6;                            //标签列表--剧本和艺人匹配
+	repeated StudioActorProp        matchingProps       = 7;                            //属性列表--场内(剧本和艺人匹配)
+	repeated StudioActorProp        scoreProps          = 8;                            //属性列表--拍摄得分（随机）
+	repeated StudioActorSkill       skills              = 9;                            //技能列表: 技能ID、技能得分
+	optional int32                           normalScoreTotal    = 10;                           //普通总分: scoreProps所有值之和， 不包含技能
+}
+
+
+// 拍摄--艺人--属性
+message StudioActorProp
+{
+	optional int32 propId        = 1;                //属性ID
+	optional int32 propVal       = 2;                //属性值
+}
+
+
+// 拍摄--艺人--技能
+message StudioActorSkill
+{
+	optional int32 skillId       = 1;                //技能ID
+	optional int32 score         = 2;                //技能得分
+}
+
+// 拍摄--事件
+message StudioEvent
+{
+	optional int32               eventId             = 1;                            //事件ID
+	optional StudioEventType     eventType           = 2;                            //事件类型
+	optional int32               eventOption         = 3;                            //事件选项
+	repeated int32      eventEvaluations    = 4;                            //事件评价列表
+}
+
+
+// 拍摄--结算
+message StudioResult
+{
+	optional int32                   level               = 1;    //拍摄级别 StudioLevel.xlsx(1   一般, 2   良好, 3   大卖, 4   超级大卖, 5 神话, 6   传说)
+	optional int32                   score               = 2;    //拍摄得分 (0--10分)
+	optional int32                   firstProfit         = 3;    //首次 收益/收视率
+	repeated GameItem       firstReward         = 4;    //首次 奖励
+	optional int32                   continuedProfit     = 5;    //持续 收益/收视率
+	optional int32                   continuedBuyCount   = 6;    //持续 购买人数
+	repeated int32          audienceEvaluation  = 7;    //持续 观众评论
+	repeated GameItem       expReward           = 8;    //获取 经验
+}
+
+
+
+
+
+
+//拍摄--数据
+message StudioData
+{
+	optional StudioStep              step                = 1;            // 步骤
+	optional StudioStory             story               = 2;            // 剧本
+	repeated StudioStory    actors              = 3;            // 艺人列表
+	optional StudioEvent             event               = 4;            // 事件
+	optional StudioResult            result              = 5;            // 结算
+}
+
+
+//==========================================================
+// 拍摄后期收益
+//-----------------------------------------------------------
+
+
+// 拍摄后期收益数据
+message StudioContinuedData
+{
+	optional int32              uid                 = 1;                //唯一ID
+	optional int32              storyId             = 2;                //剧本ID
+	optional string             storyName           = 3;                //剧本名称
+	optional int32              season              = 4;                //剧本季数
+	optional int32              episode             = 5;                //剧本期数
+	repeated int32     profitList          = 6;                //柱状图收益
+	optional int32              profitCurrent       = 7;                //收益--当前可以领取的
+	optional int32              profitTimestamp     = 8;                //收益--计时开始时间戳 (秒)
+	optional int32              profitCd            = 9;                //收益--间隔多长时间收益1次  (秒)
+	optional int32              profitNum           = 10;               //收益--每次收益数量
+	optional int32              profitEndTimestamp  = 11;               //收益--结束时间戳 (秒)
+}
+
+//*************************************拍摄系统 end *************************************************\\

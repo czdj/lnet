@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+//联盟数据
+message LeagueData
+{
+    int32 leagueId =1; 				//联盟id
+    string name =2; 				//联盟名字
+    string declaration = 3;			//宣言
+    int64 createTime = 4;			//创建时间
+    int32 level = 5; 				//等级
+    int32 chairman = 6;				//会长
+    repeated int32 gamerList =7;	//玩家列表
+}
+
+
+//玩家上线
+message OnlineLeague
+{
+	 int32 gid =2; //玩家id
+}

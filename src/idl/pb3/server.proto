@@ -1,0 +1,34 @@
+syntax = "proto3";
+message ServerInfo
+{
+	int32 id = 1;  		//服务器id
+	string name = 3;	//服务器名称
+	string cmdAddr = 4;	//命令行绑定地址
+	string rpcAddr = 5;	//rpc绑定地址
+	string extAddr = 6;	//对外服务器地址
+	int64 lastTick = 7;	//最后心跳
+	string type = 8;
+	int32 load = 9;	//负载
+	string conf = 10;//配置文件
+	int32 onlineCount = 11;//在线玩家
+	string md5 = 12;
+	string pbVer = 13;
+}
+
+message ServerWarn
+{
+	repeated int32 badRpc = 1;  
+	int64 lastPanic = 2;
+	int32 panicCount = 3;
+	bool  goScale = 4;//goroutine比例是否失衡
+}
+
+message ServerCmd
+{
+	string path = 1;
+	string globalPath = 2;
+	string logPath  = 3;
+	string logSign = 4;
+	bool daemon = 5;
+	bool lan  = 6;
+}

@@ -1,0 +1,32 @@
+/////////////////////////////////////
+// ExportXlsx生成
+// http://blog.ihaiu.com/tool-ExportXlsx
+/////////////////////////////////////
+
+import ConfigRenderInterface from "./Interfaces/ConfigRenderInterface";
+>:FOREACH imports:<
+import >:[0]:< from ">:[1]:<";
+>:ENDFOREACH:<
+
+/// 配置读取器列表
+export default class ConfigManagerList
+{
+    // 读取器列表
+    renders: ConfigRenderInterface[] = [];
+
+
+	>:FOREACH tables:<
+    >:[0]:<  : >:[1]:< = new >:[1]:<();
+	>:ENDFOREACH:<
+
+
+    // 初始化读取器列表
+    initList()
+    {
+
+		>:FOREACH tables:<
+        this.renders.push(this.>:[0]:<);
+		>:ENDFOREACH:<
+    }
+    
+}

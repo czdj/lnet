@@ -1,0 +1,87 @@
+syntax = "proto2";
+
+//区服状态
+enum ServerStatus
+{
+	Good  = 0;//流畅
+	Hot   = 1;//火爆
+	Fix   = 2;//维护中
+	Close = 3;//关闭中
+}
+message UserInfo
+{
+	optional string name   = 1;	//玩家名字
+	optional string passwd = 2;	//玩家密码
+	optional string id     = 3;	//玩家id
+}
+
+message UserRoleInfo{
+	optional int32  id     = 1;	//角色id
+	optional string name   = 2;	//角色昵称
+	optional int32  server = 3;	//角色所在服务器
+	optional int64  ctime  = 4;	//角色创建时间
+	optional string uid    = 5;	//玩家id
+	optional int32  typeId = 6;	//角色类型
+}
+
+message LogicServerInfo
+{
+	optional int32  id          = 1;//区服id
+	optional string name        = 2;//区服名字
+	optional int64  start       = 3;//启动时间
+	optional int64  end         = 4;//关闭时间
+	optional int64  time        = 5;//区服创建时间
+	optional ServerStatus state = 6;//火爆等
+	optional int64 cycleStart   = 7;//每日开服的秒数
+	optional int64 cycleEnd   	= 8;//每日关服的秒数
+	optional bool isCycle 	  	= 9;//是否周期开服
+}
+
+message SuperAccount
+{
+	optional string uid  = 1;//账号密码所对应的uid
+	optional int32  gid  = 2;//需要查看的gid
+}
+
+//排队
+message Line
+{
+	optional int32 lsid = 1;//区服id
+	optional bool  on   = 2;//是否开启排队功能
+	optional int32 min  = 3;//排队最少等待时间
+	optional int32 max  = 4;//排队最多等待时间
+}
+
+enum SDKChannel
+{
+	GM   = 0; // GM
+	Mine = 1; // Mine
+	DeNA = 2; // DeNA
+}
+
+enum OrderStatus
+{
+	Notify = 0; // 收到回调
+	Finish = 1; // 完成充值
+}
+// 内部订单通知信息 根据SDK推送的订单信息生成
+message OrderNotify
+{
+	optional int32  gid     = 1; // 玩家id
+	optional string oid		= 2; // 外部订单号
+	optional SDKChannel channel = 3; // 渠道
+	optional int32 money    = 4; // 单位金额
+	optional int64 time    = 5; // 完成时间
+	optional OrderStatus status    = 6; // 状态
+}
+
+// 封停结构
+message Black
+{
+	optional int32 gid          = 1; // gid
+	optional int32 lsid         = 2; // 区服id
+	optional int64 startTime    = 3; // 开始时间
+	optional int32 duration     = 4; // 持续时间
+	optional string info        = 5; // 提示信息 可不填 使用配表默认
+	optional string reason      = 6; // 不返回给客户端
+}

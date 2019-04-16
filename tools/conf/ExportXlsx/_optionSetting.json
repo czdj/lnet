@@ -1,0 +1,15 @@
+{
+  "autoEnd": true,
+  "optionSetting": "./optionSetting.json",
+  "xlsxDir": "../../../Example/Config/Common;../../../Example/Config/Client",
+  "outDir": "../../../Example/_gen/ConfigOut",
+  "exportSettingXlsx": "../../../Example/Config/ExportSetting.xlsx",
+  "settingStructSheet": "StructSheet",
+  "templateDir": "../../../Template",
+  "csvSeparator": "\t",
+  "csvSeparatorReplace": "",
+  "csvLineSeparatorReplace": "|n|",
+  "xlsxHeadTypeLine": 1,
+  "xlsxHeadCnLine": 2,
+  "xlsxHeadFieldLine": 3
+}

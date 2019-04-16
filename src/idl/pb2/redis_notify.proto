@@ -1,0 +1,85 @@
+syntax = "proto2";
+message RedisNotifyGamerLogin
+{
+	optional int32 psid = 1;
+	optional int32 gid = 2;
+}
+
+message RedisNotifyGamerLogout
+{
+	optional int32 psid = 1;
+	optional int32 gid = 2;
+}
+
+message RedisNotifyNewLogicArea
+{
+	optional int32 id = 1;
+}
+
+message RedisNotifyNewGamer
+{
+	optional int32 id = 1;
+}
+
+message RedisNotifyGamerUpdate
+{
+	optional int32 psid = 1;
+	optional int32 gid = 2;
+}
+
+message RedisNotifyNewGamerFriendReq
+{
+	optional int32 gid = 1;
+	optional int32 oid = 2;
+}
+
+message RedisNotifyNewGamerFriend
+{
+	optional int32 gid = 1;
+	optional int32 oid = 2;
+}
+
+message RedisNotifyNewGamerChat
+{
+	optional int32 gid = 1;
+	optional string data = 2;
+}
+
+message RedisNotifyNewWorldChat
+{
+	optional int32 server = 1;
+	optional string data = 2;
+}
+
+message RedisNotifyNewWorldMail
+{
+	optional int32 server = 1;
+	optional string data = 2;
+}
+
+message RedisNotifyNewPVPResult
+{
+	optional int32 gid = 1;
+}
+
+message RedisNotifyNewGamerMail
+{
+	optional int32 gid = 1;
+	optional string data = 2;
+}
+
+message RedisNotify
+{
+	optional RedisNotifyGamerLogin gamerLogin = 1;
+	optional RedisNotifyGamerLogout gamerLogout = 2;
+	optional RedisNotifyNewLogicArea newLogicArea = 3;
+	optional RedisNotifyNewGamer newGamer = 4;
+	optional RedisNotifyGamerUpdate gamerUpdate = 5;
+	optional RedisNotifyNewGamerFriendReq newFriendReq = 6;
+	optional RedisNotifyNewGamerFriend newFriend = 7;
+	optional RedisNotifyNewGamerChat newGamerChat = 8;
+	optional RedisNotifyNewWorldChat newWorldChat = 9;
+	optional RedisNotifyNewWorldMail newWorldMail = 10;
+	optional RedisNotifyNewPVPResult newPVPResult = 11;
+	optional RedisNotifyNewGamerMail newGamerMail = 12;
+}

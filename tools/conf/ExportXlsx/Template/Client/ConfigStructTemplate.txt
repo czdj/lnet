@@ -1,0 +1,48 @@
+/////////////////////////////////////
+// ExportXlsx生成
+// http://blog.ihaiu.com/tool-ExportXlsx
+/////////////////////////////////////
+
+import BaseConfig from "../BaseConfig";
+>:FOREACH imports:<
+import >:[0]:< from ">:[1]:<";
+>:ENDFOREACH:<
+
+
+
+export default class >:classNameConfigStruct:< extends BaseConfig
+{
+
+	>:FOREACH dicts:<
+	// >:[0]:< : >:[1]:<;
+	static KEY_>:[2]:< = ">:[0]:<";
+
+	>:ENDFOREACH:<
+
+	>:FOREACH fields:<
+	>:[0]:< : >:[1]:<;
+	>:ENDFOREACH:<
+
+
+	>:parse:< 
+
+
+	>:parseArray:< 
+
+	
+	>:FOREACH langs:<
+	get >:[0]:<():>:[3]:<
+	{
+		if(!Game.lang.isUseLang)
+			return this.>:[1]:<
+
+		let value = <>:[3]:<> Game.lang.getValue(">:[2]:<", this.id, ">:[4]:<");
+		if (!isNullOrEmpty(value))
+		{
+			return value;
+		}
+		return this.>:[1]:<
+	}
+	>:ENDFOREACH:<
+
+}

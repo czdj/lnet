@@ -1,0 +1,6 @@
+type >:classNameConfig:< struct {
+	// Field, Type, field
+	>:FOREACH fields:<
+	>:[0]:<		>:[1]:< `xml:">:[2]:<,attr"`
+	>:ENDFOREACH:<
+}

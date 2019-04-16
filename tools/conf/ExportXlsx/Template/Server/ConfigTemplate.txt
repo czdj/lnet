@@ -1,0 +1,14 @@
+/////////////////////////////////////
+// ExportXlsx生成
+// http://blog.ihaiu.com/tool-ExportXlsx
+/////////////////////////////////////
+
+namespace configs
+{
+	export class >:classNameConfig:<
+	{
+		>:FOREACH fields:<
+		>:[0]:< : >:[1]:<;
+		>:ENDFOREACH:<
+	}
+}

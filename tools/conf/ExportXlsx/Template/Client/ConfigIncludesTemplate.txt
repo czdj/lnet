@@ -1,0 +1,8 @@
+/////////////////////////////////////
+// ExportXlsx生成
+// http://blog.ihaiu.com/tool-ExportXlsx
+/////////////////////////////////////
+
+>:FOREACH list:<
+import >:[0]:<  = configs.>:[0]:< ;
+>:ENDFOREACH:<

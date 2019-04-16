@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+import "common.proto";
+
+message InnerGamerLogout
+{
+	int32 id = 1;
+	bool loginOhter = 2;
+}
+message InnerNewGamerFriendReq
+{
+	int32 gid = 1;
+    int32 oid = 2;
+}
+message InnerNewGamerFriend
+{
+	int32 gid = 1;
+    int32 oid = 2;
+}
+message InnerNewGamerChat
+{
+    int32 gid = 1;
+    ChatData chat = 2;
+}
+message InnerNewPVPResult
+{
+    int32 gid = 1;
+}
+message InnerMatchOk
+{
+    int32 gid = 1;
+    MatchInfo matchInfo = 2;
+}
+
+message InnerNewGamerMail
+{
+	int32 gid = 1;
+	Mail mail = 2;
+}
+
+message Inner
+{
+	InnerGamerLogout gamerLogout = 1;
+	InnerNewGamerFriendReq newFriendReq = 2;
+	InnerNewGamerFriend newFriend = 3;
+	InnerNewGamerChat newChat = 4;
+	InnerNewPVPResult newPVPResult = 5;
+	InnerMatchOk matchOk = 6;
+	InnerNewGamerMail newGamerMail = 7;
+}

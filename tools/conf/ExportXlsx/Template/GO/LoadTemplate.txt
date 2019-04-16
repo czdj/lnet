@@ -1,0 +1,21 @@
+
+func load>:classNameConfig:<() {
+	pathname := "./exceljson/" + "Level.json"
+	content, err := ioutil.ReadFile(pathname)
+	if err != nil {
+		logger.Error("[loadconfig]加载 %s 失败", pathname)
+		return
+	}
+	var listinfo []Level
+	listinfo = make([]Level, 0, 1)
+	err = json.Unmarshal([]byte(content), &listinfo)
+	if err != nil {
+		logger.Error("[loadconfig]加载 %s 失败, Unmarshal failed", pathname)
+		return
+	}
+	LevelMap = make(map[uint32]Level)
+	for i := 0; i < len(listinfo); i++ {
+		LevelMap[listinfo[i].Id] = listinfo[i]
+	}
+	logger.Debug("[loadconfig]loadLevel加载 %s 成功,%d 条", pathname, len(LevelMap))
+}

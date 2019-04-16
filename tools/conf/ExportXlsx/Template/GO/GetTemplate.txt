@@ -1,0 +1,6 @@
+func Get>:classNameConfig:<(id uint32) *>:classNameConfig:< {
+	if value, founded := >:classNameConfig:<Map[id]; founded {
+		return &value
+	}
+	return nil
+}

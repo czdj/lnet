@@ -1,0 +1,1 @@
+dotnet ExportXlsx.dll --optionSetting=./optionSetting.json

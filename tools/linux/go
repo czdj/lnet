@@ -1,0 +1,16 @@
+#!/bin/sh
+
+./xserver -f conf/auth_1.yml -d 1
+sleep 1
+./xserver -f conf/league_4000.yml -d 1 -n 1
+sleep 1
+./xserver -f conf/logic_101.yml -d 1 -n 1
+sleep 1
+./xserver -f conf/match_2001.yml -d 1 -n 1
+sleep 1
+./xserver -f conf/battle_3000.yml -d 1 -n 1
+
+cond=$(ps -u $(basename $HOME) | grep -i xserver | wc -l)
+echo "ServerNum:$cond"
+ps -x
+

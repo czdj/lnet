@@ -1,0 +1,10 @@
+[exportConfig]
+svnUserName =
+svnPassword =
+
+#本地服务器生成客户端协议代码
+serverPath = F:\Git\gidea\server\xserver
+autoConfigPath = %(serverPath)s\tools\auto\conf\csv
+configPath = %(serverPath)s\conf\doc
+autoGoFilePath = %(serverPath)s\src\frame
+svnConfigPath = F:\Git\gidea\xyx_wp\doc\Config

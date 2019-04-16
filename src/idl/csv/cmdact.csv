@@ -1,0 +1,5 @@
+命令,值,活动,值,c2s,s2c,备注
+GAME_CMD_C2S,1,GAME_CMD_C2S_AUTO,1,C2S,,自动化命令
+GAME_CMD_RPC,252,GAME_CMD_RPC_AUTO,1,RPC,,自动化命令
+GAME_CMD_MSG,0,GAME_CMD_MSG,0,C2S,,默认没有消息头解析
+

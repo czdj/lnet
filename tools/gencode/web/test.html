@@ -1,0 +1,110 @@
+<html>  
+    <head>  
+        <script type="text/javascript" src="./bundle.js"></script>  
+		 <script type="text/javascript" src="./net.js"></script>  
+    </head>  
+  
+    <body>
+		登录名:
+		<br>
+		<input id ="login"></input>
+		<button onclick="login()">登陆</button>
+		<br>
+		请求好友
+		<br>
+		<input id ="freqId"></input>
+		<input id ="freqMsg"></input>
+		<button onclick="freqId()">发送好友请求</button>
+		<br>
+		处理请求好友
+		<br>
+		<input id ="processId"></input>
+		<input id ="result"></input>
+		<button onclick="processFreq()">处理好友请求</button>
+		<br>
+		好友聊天
+		<br>
+		<input id ="friendId"></input>
+		<input id ="friendChatMsg"></input>
+		<button onclick="friendChat()">发送好友聊天</button>
+		<br>
+		世界聊天
+		<br>
+		<input id ="server"></input>
+		<input id ="worldChatMsg"></input>
+		<button onclick="worldChat()">发送世界聊天</button>
+		
+		<br>
+		<button onclick="subChat(0, true)">订阅玩家聊天</button>
+		<button onclick="subChat(0, false)">取消订阅玩家聊天</button>
+		<br>
+		<button onclick="subChat(1, true)">订阅世界聊天</button>
+		<button onclick="subChat(1, false)">取消订阅玩世界聊天</button>
+		
+		<script>
+			net.logic.gamerLoginGetDataS2C.on(function(e){
+				console.log(e);
+			});
+			net.logic.gamerNotifyNewFriendReqS2C.on(function(e){
+				console.log(e);
+			});
+			net.logic.gamerNotifyNewFriendS2C.on(function(e){
+				console.log(e);
+			});
+			net.logic.gamerNotifyNewChatS2C.on(function(e){
+				console.log(e);
+			});
+			net.logic.gamerLoginS2C.on(function(e){
+				console.log(e.getMain().getId());				
+				net.logic.gamerLoginGetDataC2S();
+			});
+			net.logic.gamerNewFriendReqS2C.on(function(e){
+				console.log(e);
+			});
+			net.logic.gamerProcessFriendReqS2C.on(function(e){
+				console.log(e);
+			});
+			net.logic.gamerFriendChatS2C.on(function(e){
+				console.log(e);
+			});
+			net.logic.gamerWorldChatS2C.on(function(e){
+				console.log(e);
+			});
+			net.logic.gamerNotifyLoginOtherS2C.on(function(e){
+				console.log(e);
+			});
+			function login() {
+				var name = document.getElementById("login").value;
+				net.auth.mustLogin(name, "", name, 1, 1, function(ok, json) {
+					if(ok){
+						net.logic.connect();
+					}
+				})
+			}
+			function freqId() {
+				var id = document.getElementById("freqId").value;
+				var msg = document.getElementById("freqMsg").value;
+				net.logic.gamerNewFriendReqC2S(parseInt(id), msg)
+			}
+			function processFreq() {
+				var id = document.getElementById("processId").value;
+				var msg = document.getElementById("result").value;
+				net.logic.gamerProcessFriendReqC2S(parseInt(id), msg == "1")
+			}
+			function friendChat() {
+				var id = document.getElementById("friendId").value;
+				var msg = document.getElementById("friendChatMsg").value;
+				net.logic.gamerFriendChatC2S(parseInt(id), msg)
+			}
+			function worldChat() {
+				var id = document.getElementById("server").value;
+				var msg = document.getElementById("worldChatMsg").value;
+				net.logic.gamerWorldChatC2S(parseInt(id), msg)
+			}
+			function subChat(channel, sub) {
+				net.logic.gamerSubChatChannelC2S(channel, sub);
+			}
+			
+		</script>
+    </body>  
+</html>  

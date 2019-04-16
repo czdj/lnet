@@ -1,0 +1,156 @@
+syntax = "proto2";
+
+//玩家状态
+enum GamerStatus
+{
+	Offline = 0; //离线
+	Online  = 1; //在线
+	Teaming = 2; //组队中
+	Matching = 3; //匹配中
+	Fighting  = 4; //游戏中
+}
+
+enum ChatChannel
+{
+	GamerChat = 0;
+	WorldChat = 1;
+}
+
+//邮件类型
+enum MailType
+{
+	ActivityMail = 0; //活动邮件
+	SysMail = 1; //系统邮件
+	AnnouncementMail = 2; //公告邮件
+	GamerMail = 3;
+}
+
+//邮件附件状态
+enum MailState
+{
+	MailUnRead = 0; //未读
+	MailRead = 1; //已读
+	MailReceived = 2; //接收
+}
+
+
+enum PVPType
+{
+	MINVALID     = 0;    //无效类型
+	M1V1         = 100;  //普通匹配1v1
+	M2V2         = 103;  //普通匹配2v2
+	M3V3         = 104;  //普通匹配3v3
+	M5V5         = 105;  //普通匹配5v5
+	M1V10        = 106;
+	RankM3v3     = 200;  //排位3v3
+	RankM5v5     = 201;  //排位5v5
+	TeamM1v1     = 301;  //球队模式1v1
+	C2V2         = 401;  //自定义模式2v2
+	C3V3         = 402;  //自定义模式3v3
+	C5V5         = 403;  //自定义模式5v5
+	H3V3         = 501;  //半场普通匹配3v3
+	RankH3V3     = 502;  //半场排位匹配3v3
+	Conscript3v3 = 601;  //征召模式全场3v3
+	M1           = 1000; //单人普通匹配
+	MT1          = 2000; //demo单人普通匹配
+	MT1V1        = 2001; //demo普通匹配1v1
+	MT2V2        = 2002; //demo普通匹配2v2
+	MT3V3        = 2003; //demo普通匹配3v3
+}
+
+
+enum BuildState
+{
+	Normal = 0; //正常状态
+	Building = 1; //建造状态
+	LevelUp = 2; //升级中
+}
+
+
+enum SpeedUpType
+{
+	SpeedUpType_Invite = 0;//邀请加速
+}
+
+
+//道具类型
+enum ItemType
+{
+	invalid			= 0;//无效类型
+	diamond 		= 1;//钻石
+	gold 			= 2;//金币
+	dollar 			= 3;//美元
+	product 		= 4;//周边产品
+	Item 			= 5;//普通道具
+	property 		= 6;//资产
+	artistContract 	= 7;//艺人合同
+	gift 			= 8;//礼包
+	buildingMaterial= 9;//建筑材料
+	licence 		= 10;//许可证
+	fan 			= 11;//粉丝
+	like 			= 12;//点赞
+	expect 			= 13;//期待
+	cup 			= 14;//奖杯
+	artistPhysical	= 15;//艺人体力
+	artistChip		= 16;//随机艺人礼包碎片
+	multipleChoiceOne = 17;//多选一物品
+	script			= 18;//电影剧本
+	completeType	= 19;//完整类型
+	information    = 20;//情报
+}
+
+//请报约束条件
+enum IntelligenceConst
+{
+	INVALID    = 0;
+	minNum     = 3;
+	maxNum     = 10;
+	SpecialIntelligenceTypeId = 20;
+	TreasureChestExtractNum = 100;
+}
+
+
+
+// 拍摄--步骤
+enum StudioStep
+{
+	requestStoryList		= 0;//请求剧本列表
+	selectStory				= 1;//选择剧本
+	selectActor 			= 2;//选择艺人
+	selectEventOption 		= 3;//选择事件选项
+	eventEvaluations 		= 4;//事件评论列表
+	matchingDisplay 		= 5;//匹配展示(Label)
+	propDisplay 			= 6;//拍摄展示(Prop)
+	shareDisplay 			= 7;//分享展示
+	firstReward 			= 8;//首播结算
+	continuedReward 		= 9;//后续收益
+	expReward 				= 10;//经验值
+	end 					= 11;//结束
+}
+
+
+// 拍摄--事件类型
+enum StudioEventType
+{
+	storyCharactersBest			= 0;//特殊事件
+	storyNoraml 				= 1;//普通事件
+	storyFunny 					= 2;//搞笑事件
+}
+
+
+
+// 拍摄--艺人--状态
+enum StudioActorState
+{
+	normal				= 0;//普通
+	help 				= 1;//助阵
+	best 				= 2;//最匹配
+}
+
+
+// 拍摄--剧本--类型
+enum StudioStoryType
+{
+	StudioStoryType_Normal				= 0;//普通剧本
+	StudioStoryType_gold 				= 1;//金本
+}
