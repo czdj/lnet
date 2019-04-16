@@ -240,29 +240,11 @@ func GetS2CPBString(ppb *pb.S2C) string {
 
 
 def GenProto():
-	GenC2S()
-	GenS2C()
-	shutil.copytree(genpyroot + "/unity", csroot + "/unity")
 	if 'Windows' in platform.system():
-		if pbVersion == "2":
-			for fname in ListDirFile('%s' %(pbroot)):
-				CopyFile(fname, shellroot + "/prtobuf-net/" + os.path.basename(fname))
 		for fname in ListDirFile('%s' %(pbroot)):
 			os.system('set PATH=%s;%%PATH%% && protoc.exe --go_out=%s/proto/pb -I=%s %s' 
 			%(shellroot, srcroot, pbroot, fname))
-			os.system('set PATH=%s;%%PATH%% && protoc.exe --python_out=%s -I=%s %s' 
-			%(shellroot, pythonroot, pbroot, fname))
-			if pbVersion == "3":
-				os.system('set PATH=%s;%%PATH%% && protoc --js_out=import_style=commonjs,binary:%s -I=%s %s' 
-				%(shellroot, webroot, pbroot, fname))
-				os.system('set PATH=%s;%%PATH%% && protoc.exe --csharp_out=%s -I=%s %s' 
-				%(shellroot, cspbroot, pbroot, fname))
-			else:
-				csFile = os.path.basename(fname).replace(".proto", ".cs")
-				csFile = csFile[0].upper() + csFile[1:]
-				os.system('set PATH=%s/prtobuf-net;%%PATH%% && cd %s && protogen.exe -i:%s -o:%s -ns:Proto -q'
-				%(shellroot, shellroot + "/prtobuf-net/", os.path.basename(fname), cspbroot + "/" + csFile))
-		
+
 		for fname in ListDirFile('%s/proto/pb' %(srcroot)):
 			with open(fname, "r") as f:
 				old = f.readlines()
@@ -271,10 +253,6 @@ def GenProto():
 					if lin == "package %s\n" %os.path.basename(fname).split(".")[0]:
 						old[old.index(lin)] = "package pb\n"
 				f.writelines(old)
-		if pbVersion == "2":
-			for fname in ListDirFile('%s' %(pbroot)):
-				os.remove(shellroot + "/prtobuf-net/" + os.path.basename(fname))
-		
 	else:
 		os.system('export PATH=%s:$PATH && export LD_LIBRARY_PATH=%s:$LD_LIBRARY_PATH && chmod -R a+x %s && protoc --go_out=import_path=pb:%s/proto/pb -I=%s %s/*.proto' 
 		%(shellroot, shellroot, shellroot, srcroot, pbroot, pbroot))
@@ -284,103 +262,4 @@ def GenProto():
 		%(shellroot, shellroot, shellroot, webroot, pbroot, pbroot))
 		os.system('export PATH=%s:$PATH && export LD_LIBRARY_PATH=%s:$LD_LIBRARY_PATH && chmod -R a+x %s && protoc --csharp_out=%s -I=%s %s/*.proto'
 		%(shellroot, shellroot, shellroot, cspbroot, pbroot, pbroot))
-
-	with open("%s/__init__.py" %pythonroot,"w") as f:
-		for n in ListDirFile(pythonroot):
-			fname = os.path.split(n)[1]
-			fname = fname.split(".")[0]
-			if fname != "__init__":
-				f.write("from %s import *\n" %fname)
-
-	with open("%s/exports.js" %webroot,"w") as f:
-		f.write("module.exports = {\n")
-		for n in ListDirFile(webroot):
-			fname = os.path.split(n)[1]
-			fname = fname.split(".")[0]
-			if fname == "auth_pb" or fname == "exports" or fname == "inner_pb" or fname == "redis_notify_pb" or fname == "rpc_pb" or fname == "server_pb":
-				continue
-			f.write("\t DataProto: require('./%s'),\n" %fname)
-		f.write("}")
-	if 'Windows' in platform.system():
-		shutil.copytree(genpyroot + "/nodejs/node_modules/google-protobuf", webroot + "/node_modules/google-protobuf")
-		os.system('set PATH=%s;%%PATH%% && browserify.cmd %s/exports.js > %s/bundle.js' 
-				%(genpyroot + "/nodejs", webroot, webroot))
-		for n in ListDirFile(webroot):
-			fname = os.path.split(n)[1]
-			fname = fname.split(".")[0]
-			if fname != "bundle":
-				os.remove(os.path.join(n))
-		DelDir(webroot + "/node_modules")
-		os.rmdir(webroot + "/node_modules")
-
-	if pbVersion == "2":
-		with open("%s/github.com/golang/protobuf/proto/lib.go" %deproot,"r") as f:
-			old=f.readlines()
-			copy = False
-			copyList = ['Bool', 'Int32', 'Int', 'Int64', 'Float32', 'Float64', 'Uint32', 'Uint64', 'String']	 
-			with open("%s/proto/pb/lib.go" %srcroot,"w") as f2:
-				f2.write("package pb\n")
-				for data in old:
-					if copy:
-						f2.write(data)
-						if data.find("}") != -1:
-							copy = False
-					else:
-						for name in copyList:
-							if data[:5 + len(name)] == "func %s" %name:
-								f2.write(data)
-								copy = True
-								break
-	elif pbVersion == "3":
-		enums = []
-		for fname in ListDirFile('%s' %(pbroot)):
-			with open(fname, "r") as f:
-				old = f.readlines()
-				for line in old:
-					sss = []
-					for s in line.strip().split(" "):
-						if s.strip() != "":
-							sss.append(s.strip())
-					if len(sss) >= 2 and sss[0] == "enum":
-						enums.append(sss[1])
-		with open("%s/proto/pb/lib.go" %srcroot,"w") as f2:
-			f2.write(
-'''package pb //pb2需要指针，为了统一
-func Bool(v bool) bool {
-	return v
-}
-func Int32(v int32) int32 {
-	return v
-}
-func Int(v int) int32 {
-	return int32(v)
-}
-func Int64(v int64) int64 {
-	return v
-}
-func Float32(v float32) float32 {
-	return v
-}
-func Float64(v float64) float64 {
-	return v
-}
-func Uint32(v uint32) uint32 {
-	return v
-}
-func Uint64(v uint64) uint64 {
-	return v
-}
-func String(v string) string {
-	return v
-}
-''')
-			for enum in enums:
-				f2.write(
-'''
-func (x %s) Enum() %s {
-	return x
-}
-''' %(enum, enum))
-
-
 

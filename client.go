@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func main() {
+func main1() {
 	lnet.MsgTypeInfo.Register(11,lnet.MessageTest{})
 
 	processor := &lnet.DefProcessor{}

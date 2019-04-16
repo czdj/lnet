@@ -17,14 +17,14 @@ if len(sys.argv) > 1:
 	gencode.Init()
 	gencode.pb322.PB322()
 	gencode.genproto.GenProto()
-	gencode.geninner.GenInner()
-	gencode.generror.GenError()
-	gencode.gencmdact.GenCmdAct()
-	gencode.gennotify.GenNotify()
-	gencode.genlua.GenLua()
-	#gencode.genconfig.GenConfig()
-	gencode.genjs.GenJS()
-	gencode.gencs.GenCS()
+	# gencode.geninner.GenInner()
+	# gencode.generror.GenError()
+	# gencode.gencmdact.GenCmdAct()
+	# gencode.gennotify.GenNotify()
+	# gencode.genlua.GenLua()
+	# #gencode.genconfig.GenConfig()
+	# gencode.genjs.GenJS()
+	# gencode.gencs.GenCS()
 
 
 if 'Windows' in platform.system():
