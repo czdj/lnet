@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	lnet.Logger = lnet.InitLogger("log.log","")
 	processor := &lnet.DefProcessor{}
 	protocol := &lnet.PbProtocol{}
 	lnet.MsgTypeInfo.Register(11,lnet.MessageTest{})

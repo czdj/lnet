@@ -2,6 +2,7 @@ package lnet
 
 import (
 	"fmt"
+	"go.uber.org/zap"
 	"io"
 	"net"
 	"time"
@@ -30,9 +31,10 @@ func NewTcpTransport(netAddr string, timeout int, protocol  IProtocol, processor
 func (this *TcpTransport) Listen() error {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", this.NetAddr);
 	if err != nil{
-		fmt.Println("addr err:%v!",err)
+		Logger.Error("Tcp Addr Err",zap.Any("err",err))
 		return err
 	}
+
 	listen, err := net.ListenTCP("tcp", tcpAddr);
 	if err != nil{
 		fmt.Println("tcp listen err:%v!",err)
