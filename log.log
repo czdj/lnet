@@ -1,5 +1,0 @@
-{"level":"info","time":"2019-04-17T15:08:13.849+0800","linenum":"lnet/log.go:67","msg":"log 初始化成功"}
-{"level":"info","time":"2019-04-17T15:26:05.756+0800","linenum":"lnet/log.go:67","msg":"log 初始化成功"}
-{"level":"info","time":"2019-04-17T15:26:05.924+0800","linenum":"lnet/tcp.go:42","msg":"TcpServer is listening","addr":"127.0.0.1:9000"}
-{"level":"info","time":"2019-04-17T15:27:11.179+0800","line":"lnet/log.go:67","msg":"log 初始化成功"}
-{"level":"info","time":"2019-04-17T15:27:11.345+0800","line":"lnet/tcp.go:42","msg":"TcpServer is listening","addr":"127.0.0.1:9000"}
