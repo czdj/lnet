@@ -19,7 +19,7 @@ func main1() {
 	msg := &pb.GameItem{Id:1,Type:2,Count:3}
 	//msg1 := "bbbbbbbb"
 	for {
-		client.Send(12,msg)
+		client.Send(msg)
 		//transport.Send(12,msg1)
 		time.Sleep(1 * time.Second)
 	}

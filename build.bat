@@ -5,7 +5,7 @@ echo input 3 build union for protobuf 3.6
 echo input 4 to export lastest config and build union for protobuf 2.5
 echo input 5 to export lastest config and build union for protobuf 3.6
 python tools/build.py 3
-
+pause
 ::set /p pb=chose opt type:
 if %pb% == 1 (
 echo please wait a moment
