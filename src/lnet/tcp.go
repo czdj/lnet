@@ -1,7 +1,6 @@
 package lnet
 
 import (
-	"fmt"
 	"go.uber.org/zap"
 	"io"
 	"net"
@@ -37,15 +36,15 @@ func (this *TcpTransport) Listen() error {
 
 	listen, err := net.ListenTCP("tcp", tcpAddr);
 	if err != nil{
-		fmt.Println("tcp listen err:%v!",err)
+		Logger.Error("tcp listen err",zap.Any("err",err))
 		return err
 	}
-	fmt.Println("TcpServer is listening addr:%v!",tcpAddr)
+	Logger.Info("TcpServer is listening",zap.Any("addr",tcpAddr))
 
 	for !this.isStop(){
 		conn, err := listen.Accept();
 		if err != nil{
-			fmt.Println("tcp Accept err:%v!",err)
+			Logger.Error("tcp Accept err",zap.Any("err",err))
 			this.stopFlag = 1
 			return err
 		}
@@ -59,16 +58,16 @@ func (this *TcpTransport) Listen() error {
 func (this *TcpTransport) Connect() error{
 	tcpAddr, err := net.ResolveTCPAddr("tcp", this.NetAddr);
 	if err != nil{
-		fmt.Println("addr err:%v!",err)
+		Logger.Error("tcp addr err",zap.Any("err",err))
 		return err
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil{
-		fmt.Println("Connect Server err:%v!",err)
+		Logger.Error("Connect Server err",zap.Any("err",err))
 		return err
 	}
-	fmt.Println("Connect Server Addr:%v!",tcpAddr)
+	Logger.Info("Connect Server ",zap.Any("Addr",tcpAddr))
 	this.Conn = conn
 
 	this.onNewConnect(this)
@@ -86,7 +85,7 @@ func (this *TcpTransport) read(){
 		headData := make([]byte, unsafe.Sizeof(PakgeHead{}))
 		_, err := io.ReadFull(this.Conn, headData)
 		if err != nil {
-			fmt.Println("IO Read Err:%v",err)
+			Logger.Error("IO Read Err",zap.Any("err",err))
 			break
 		}
 		pakgeHead := (*PakgeHead)(unsafe.Pointer(&headData[0]))
@@ -96,7 +95,7 @@ func (this *TcpTransport) read(){
 		data := make([]byte,head.Len)
 		_, err = io.ReadFull(this.Conn, data)
 		if err != nil {
-			fmt.Println("IO Read Err:%v",err)
+			Logger.Error("IO Read Err",zap.Any("err",err))
 			break
 		}
 
@@ -115,7 +114,7 @@ func (this *TcpTransport) write(){
 		this.onClosed()
 
 		if err := recover(); err != nil {
-			fmt.Println("Write panic:%v",err)
+			Logger.Error("Write panic",zap.Any("err",err))
 			return
 		}
 	}()
@@ -137,7 +136,7 @@ func (this *TcpTransport) write(){
 
 		_,err := this.Conn.Write(*data)
 		if err != nil{
-			fmt.Println("Write Err:%v",err)
+			Logger.Error("Write Err",zap.Any("err",err))
 			break
 		}
 		data = nil
@@ -148,13 +147,13 @@ func (this *TcpTransport) write(){
 func (this *TcpTransport)Send(msg interface{})error{
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("Send panic:%v",err)
+			Logger.Error("Send panic",zap.Any("err",err))
 			return
 		}
 	}()
 
 	if this.isStop(){
-		fmt.Println("Transport has been closed!!!")
+		Logger.Info("Transport has been closed!!!")
 		return nil
 	}
 
@@ -176,7 +175,7 @@ func (this *TcpTransport)Send(msg interface{})error{
 	select {
 	case this.cwrite <- &data:
 	default:
-		fmt.Println("write buf full!!!")
+		Logger.Info("write buf full!!!")
 		this.cwrite <- &data
 	}
 	return nil

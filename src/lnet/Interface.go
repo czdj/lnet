@@ -1,7 +1,7 @@
 package lnet
 
 import (
-	"fmt"
+	"go.uber.org/zap"
 	"sync/atomic"
 	"time"
 )
@@ -66,7 +66,7 @@ func (this *DefTransport) Close(){
 func (this *DefTransport) onClosed(){
 	if atomic.CompareAndSwapInt32(&this.stopFlag,0,1){
 		close(this.cwrite)
-		fmt.Println("connect closed !!")
+		Logger.Info("connect closed !")
 	}
 }
 func (this *DefTransport)isStop() bool{
@@ -79,7 +79,7 @@ func (this *DefTransport)isTimeout(tick *time.Timer) bool{
 		tick.Reset(time.Second * time.Duration(this.timeout))
 		return false
 	}
-	fmt.Println("msgque close because timeout wait:%v timeout:%v", left, this.timeout)
+	Logger.Info("msgque close because timeout",zap.Int("wait",left),zap.Int("timeout",this.timeout))
 	return true
 }
 
@@ -100,7 +100,7 @@ type DefProcessor struct {
 
 func (this *DefProcessor)Process(transport ITransport, msg interface{}){
 	t := transport.(*TcpTransport)
-	fmt.Println("process:%v,%v",t.Conn.RemoteAddr(),msg)
+	Logger.Info("process msg",zap.Any("RemoteAddr",t.Conn.RemoteAddr()),zap.Any("msg",msg))
 	transport.Send(msg)
 }
 

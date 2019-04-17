@@ -1,8 +1,8 @@
 package lnet
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
+	"go.uber.org/zap"
 	"net/http"
 	"time"
 	"unsafe"
@@ -33,7 +33,7 @@ func NewWebsocketTransport(netAddr string, timeout int, protocol  IProtocol, pro
 func (this *WebsocketTransport) websocketConnHandler(w http.ResponseWriter, r *http.Request){
 	conn, err := this.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Println("upgrade:", err)
+		Logger.Error("websocket upgrade err",zap.Any("err",err))
 		return
 	}
 
@@ -43,10 +43,10 @@ func (this *WebsocketTransport) websocketConnHandler(w http.ResponseWriter, r *h
 
 func (this *WebsocketTransport) Listen() error {
 	http.HandleFunc("/ws",this.websocketConnHandler);
-	fmt.Println("WebsocketServer is listening addr:%v!",this.NetAddr)
+	Logger.Info("WebsocketServer is listening",zap.Any("addr",this.NetAddr))
 	err := http.ListenAndServe(this.NetAddr, nil);
 	if err != nil{
-		fmt.Println("Websocket Listen err:%v!",err)
+		Logger.Error("Websocket Listen err",zap.Any("err",err))
 		return err
 	}
 
@@ -56,11 +56,10 @@ func (this *WebsocketTransport) Listen() error {
 func (this *WebsocketTransport) Connect() error{
 	conn, _,err := websocket.DefaultDialer.Dial(this.NetAddr, nil);
 	if err != nil{
-		fmt.Println("Connect err:%v!",err)
+		Logger.Error("Connect err",zap.Any("err",err))
 		return err
 	}
-
-	fmt.Println("Connect Server Addr:%v!",this.NetAddr)
+	Logger.Info("Connect Server",zap.Any("addr",this.NetAddr))
 	this.Conn = conn
 
 	this.onNewConnect(this)
@@ -76,7 +75,7 @@ func (this *WebsocketTransport) read(){
 	for !this.isStop(){
 		_, data, err := this.Conn.ReadMessage()
 		if err != nil {
-			fmt.Println("IO Read Err:%v",err)
+			Logger.Error("IO Read Err",zap.Any("err",err))
 			break
 		}
 		this.lastTick = time.Now().Unix()
@@ -98,7 +97,7 @@ func (this *WebsocketTransport) write(){
 		this.onClosed()
 
 		if err := recover(); err != nil {
-			fmt.Println("Write panic:%v",err)
+			Logger.Error("Write panic",zap.Any("err",err))
 			return
 		}
 	}()
@@ -120,7 +119,7 @@ func (this *WebsocketTransport) write(){
 
 		err := this.Conn.WriteMessage(websocket.BinaryMessage,*data)
 		if err != nil{
-			fmt.Println("Write Err:%v",err)
+			Logger.Error("Write Err",zap.Any("err",err))
 			break
 		}
 		data = nil
@@ -131,13 +130,13 @@ func (this *WebsocketTransport) write(){
 func (this *WebsocketTransport)Send(msg interface{})error{
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("Send panic:%v",err)
+			Logger.Error("Send panic",zap.Any("err",err))
 			return
 		}
 	}()
 
 	if this.isStop(){
-		fmt.Println("Transport has been closed!!!")
+		Logger.Info("Transport has been closed!!!")
 		return nil
 	}
 
@@ -159,7 +158,7 @@ func (this *WebsocketTransport)Send(msg interface{})error{
 	select {
 	case this.cwrite <- &data:
 	default:
-		fmt.Println("write buf full!!!")
+		Logger.Info("write buf full!!!")
 		this.cwrite <- &data
 	}
 	return nil
