@@ -2,6 +2,7 @@ package main
 
 import (
 	"lnet"
+	protocol2 "lnet/protocol"
 	"proto/pb"
 	"time"
 )
@@ -11,7 +12,7 @@ func main1() {
 	lnet.MsgTypeInfo.Register(12,pb.GameItem{})
 
 	processor := &lnet.DefProcessor{}
-	protocol := &lnet.PbProtocol{}
+	protocol := &protocol2.PbProtocol{}
 	//client :=  lnet.NewTcpClient("127.0.0.1:9000", protocol,processor)
 	client :=  lnet.NewWebsocketClient("ws://127.0.0.1:9000/ws", protocol,processor)
 	client.Connect()

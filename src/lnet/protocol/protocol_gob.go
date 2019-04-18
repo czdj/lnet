@@ -1,10 +1,11 @@
-package lnet
+package protocol
 
 import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
 	"unsafe"
+	"lnet"
 )
 
 type GobProtocol struct {
@@ -18,12 +19,12 @@ func (this *GobProtocol) Encode(tag uint16, msg interface{}) []byte{
 		fmt.Println("encode error:%v", err)
 	}
 
-	head := &PakgeHead{}
+	head := &lnet.PakgeHead{}
 	head.Tag = tag
 	head.Len = uint16(len(buf.Bytes()))
 
-	data := make([]byte,unsafe.Sizeof(PakgeHead{}))
-	ptr := (*PakgeHead)(unsafe.Pointer(&data[0]))
+	data := make([]byte,unsafe.Sizeof(lnet.PakgeHead{}))
+	ptr := (*lnet.PakgeHead)(unsafe.Pointer(&data[0]))
 	ptr.Len = head.Len
 	ptr.Tag = head.Tag
 	data = append(data,buf.Bytes()...)
@@ -35,7 +36,7 @@ func (this *GobProtocol) Decode(tag uint16, data []byte) interface{}{
 	buf := bytes.Buffer{}
 	buf.Write(data)
 	dec := gob.NewDecoder(&buf)
-	msg := MsgTypeInfo.NewMsg(tag)
+	msg := lnet.MsgTypeInfo.NewMsg(tag)
 	if err := dec.Decode(msg); err != nil {
 		fmt.Println("decode error:", err)
 	}
