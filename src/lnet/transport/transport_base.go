@@ -8,10 +8,12 @@ import (
 	"time"
 )
 
+var transportId uint32 //传输层id
+
 type BaseTransport struct{
-	Id int
+	Id uint32
 	NetType lnet.NetType
-	NetAddr string
+	LocalAddr string
 	PeerAddr string
 	stopFlag int32
 	cwrite chan *[]byte
@@ -20,6 +22,12 @@ type BaseTransport struct{
 
 	protocol iface.IProtocol
 	processor iface.IProcessor
+	server    iface.IServer
+}
+
+
+func (this *BaseTransport) GetId() uint32{
+	return this.Id
 }
 
 func (this *BaseTransport) Listen() error{

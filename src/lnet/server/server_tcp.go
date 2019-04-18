@@ -15,9 +15,12 @@ func NewTcpServer(netAddr string, protocol  iface.IProtocol, processor iface.IPr
 		BaseServer:BaseServer{
 			NetType:lnet.TCP,
 			NetAddr:netAddr,
-			transport: transport.NewTcpTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,nil),
+			transport: nil,
+			transportManager:lnet.NewTransportManager(),
 		},
 	}
+	t := transport.NewTcpTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,tcpServer, nil)
+	tcpServer.SetTransport(t)
 
 	return tcpServer
 }

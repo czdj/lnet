@@ -6,6 +6,7 @@ import (
 	"lnet"
 	"lnet/iface"
 	"net/http"
+	"sync/atomic"
 	"time"
 	"unsafe"
 )
@@ -16,17 +17,19 @@ type WebsocketTransport struct {
 	Upgrader *websocket.Upgrader
 }
 
-func NewWebsocketTransport(netAddr string, timeout int, protocol  iface.IProtocol, processor iface.IProcessor,conn *websocket.Conn) *WebsocketTransport{
+func NewWebsocketTransport(netAddr string, timeout int, protocol  iface.IProtocol, processor iface.IProcessor,server iface.IServer,conn *websocket.Conn) *WebsocketTransport{
 	return  &WebsocketTransport{
 		BaseTransport:BaseTransport{
-			NetAddr:netAddr,
-			stopFlag:0,
-			cwrite:make(chan *[]byte,64),
-			timeout:timeout,
-			lastTick:time.Now().Unix(),
-			protocol:protocol,
-			processor:processor},
-		Conn:conn,
+			Id:          atomic.AddUint32(&transportId, 1),
+			LocalAddr:   netAddr,
+			stopFlag:    0,
+			cwrite:      make(chan *[]byte,64),
+			timeout:     timeout,
+			lastTick:    time.Now().Unix(),
+			protocol:    protocol,
+			processor:   processor,
+			server:      server},
+		Conn: conn,
 		Upgrader:&websocket.Upgrader{},
 	}
 }
@@ -38,14 +41,14 @@ func (this *WebsocketTransport) websocketConnHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	WebsocketTransport := NewWebsocketTransport(this.NetAddr,lnet.DefMsgTimeout, this.protocol,this.processor,conn)
+	WebsocketTransport := NewWebsocketTransport(this.LocalAddr,lnet.DefMsgTimeout, this.protocol,this.processor,this.server,conn)
 	this.OnNewConnect(WebsocketTransport)
 }
 
 func (this *WebsocketTransport) Listen() error {
 	http.HandleFunc("/ws",this.websocketConnHandler);
-	lnet.Logger.Info("WebsocketServer is listening",zap.Any("addr",this.NetAddr))
-	err := http.ListenAndServe(this.NetAddr, nil);
+	lnet.Logger.Info("WebsocketServer is listening",zap.Any("addr",this.LocalAddr))
+	err := http.ListenAndServe(this.LocalAddr, nil);
 	if err != nil{
 		lnet.Logger.Error("Websocket Listen err",zap.Any("err",err))
 		return err
@@ -55,12 +58,12 @@ func (this *WebsocketTransport) Listen() error {
 }
 
 func (this *WebsocketTransport) Connect() error{
-	conn, _,err := websocket.DefaultDialer.Dial(this.NetAddr, nil);
+	conn, _,err := websocket.DefaultDialer.Dial(this.LocalAddr, nil);
 	if err != nil{
 		lnet.Logger.Error("Connect err",zap.Any("err",err))
 		return err
 	}
-	lnet.Logger.Info("Connect Server",zap.Any("addr",this.NetAddr))
+	lnet.Logger.Info("Connect Server",zap.Any("addr",this.LocalAddr))
 	this.Conn = conn
 
 	this.OnNewConnect(this)

@@ -6,6 +6,7 @@ import (
 	"lnet"
 	"lnet/iface"
 	"net"
+	"sync/atomic"
 	"time"
 	"unsafe"
 )
@@ -15,22 +16,24 @@ type TcpTransport struct {
 	Conn net.Conn
 }
 
-func NewTcpTransport(netAddr string, timeout int, protocol  iface.IProtocol, processor iface.IProcessor,conn net.Conn) *TcpTransport{
+func NewTcpTransport(netAddr string, timeout int, protocol  iface.IProtocol, processor iface.IProcessor,server iface.IServer, conn net.Conn) *TcpTransport{
 	return  &TcpTransport{
 		BaseTransport:BaseTransport{
-			NetAddr:netAddr,
-			stopFlag:0,
-			cwrite:make(chan *[]byte,64),
-			timeout:timeout,
-			lastTick:time.Now().Unix(),
-			protocol:protocol,
-			processor:processor},
-		Conn:conn,
+			Id:          atomic.AddUint32(&transportId, 1),
+			LocalAddr:   netAddr,
+			stopFlag:    0,
+			cwrite:      make(chan *[]byte,64),
+			timeout:     timeout,
+			lastTick:    time.Now().Unix(),
+			protocol:    protocol,
+			processor:   processor,
+			server:      server},
+		Conn: conn,
 	}
 }
 
 func (this *TcpTransport) Listen() error {
-	tcpAddr, err := net.ResolveTCPAddr("tcp", this.NetAddr);
+	tcpAddr, err := net.ResolveTCPAddr("tcp", this.LocalAddr);
 	if err != nil{
 		lnet.Logger.Error("Tcp Addr Err",zap.Any("err",err))
 		return err
@@ -50,7 +53,15 @@ func (this *TcpTransport) Listen() error {
 			this.stopFlag = 1
 			return err
 		}
-		tcpTransport := NewTcpTransport(this.NetAddr,lnet.DefMsgTimeout, this.protocol,this.processor,conn)
+		///TODO:配置
+		if this.server.GetTransportMgr().Len() >= 30000{
+			conn.Close()
+			continue
+		}
+
+		tcpTransport := NewTcpTransport(this.LocalAddr,lnet.DefMsgTimeout, this.protocol,this.processor,this.server,conn)
+		this.server.GetTransportMgr().Add(tcpTransport)
+
 		this.OnNewConnect(tcpTransport)
 	}
 
@@ -58,7 +69,7 @@ func (this *TcpTransport) Listen() error {
 }
 
 func (this *TcpTransport) Connect() error{
-	tcpAddr, err := net.ResolveTCPAddr("tcp", this.NetAddr);
+	tcpAddr, err := net.ResolveTCPAddr("tcp", this.LocalAddr);
 	if err != nil{
 		lnet.Logger.Error("tcp addr err",zap.Any("err",err))
 		return err

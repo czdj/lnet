@@ -15,7 +15,7 @@ func NewTcpClient(netAddr string, protocol  iface.IProtocol, processor iface.IPr
 		BaseClient:BaseClient{
 			NetType:lnet.TCP,
 			NetAddr:netAddr,
-			transport: transport.NewTcpTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,nil),
+			transport: transport.NewTcpTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,nil,nil),
 		},
 	}
 
