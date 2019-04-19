@@ -2,7 +2,7 @@ package main
 
 import (
 	"lnet"
-	"lnet/lprocess"
+	"lnet/lmsghandle"
 	"lnet/lprotocol"
 	"lnet/lserver"
 	"proto/pb"
@@ -10,13 +10,13 @@ import (
 
 func main() {
 	lnet.Logger = lnet.InitLogger("./logs/log.log", "")
-	processor := &lprocess.BaseProcessor{}
 	protocol := &lprotocol.PbProtocol{}
+	msgHandle := lmsghandle.NewBaseMsgHandle(protocol)
 	//protocol := &lprotocol.GobProtocol{}
-	lnet.MsgTypeInfo.Register(12, pb.GameItem{})
+	msgHandle.RegisterMsg(12, pb.GameItem{})
 
-	server := lserver.NewTcpServer("127.0.0.1:9000", protocol, processor)
-	//server := lserver.NewWebsocketServer("127.0.0.1:9000", protocol, processor)
+	//server := lserver.NewTcpServer("127.0.0.1:9000", protocol, msgHandle)
+	server := lserver.NewWebsocketServer("127.0.0.1:9000", protocol, msgHandle)
 
 	server.Start()
 
