@@ -14,7 +14,7 @@ type ITransport interface {
 	OnNewConnect(transport ITransport)
 	Read()
 	Write()
-	Send(msg interface{})error
+	Send(data []byte) error
 	Close()
 	OnClosed()
 	IsStop() bool

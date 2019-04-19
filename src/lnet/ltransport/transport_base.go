@@ -20,12 +20,11 @@ type BaseTransport struct {
 	timeout    int //传输超时
 	lastTick   int64
 
-	protocol  iface.IProtocol
-	processor iface.IProcessor
+	msgHandle iface.IMsgHandle
 	server    iface.IServer
 }
 
-func NewBaseTransport(localAddr string, timeout int, protocol iface.IProtocol, processor iface.IProcessor, server iface.IServer) *BaseTransport {
+func NewBaseTransport(localAddr string, timeout int, msgHandle iface.IMsgHandle, server iface.IServer) *BaseTransport {
 	return &BaseTransport{
 		Id:        atomic.AddUint32(&transportId, 1),
 		LocalAddr: localAddr,
@@ -33,8 +32,7 @@ func NewBaseTransport(localAddr string, timeout int, protocol iface.IProtocol, p
 		cwrite:    make(chan *[]byte, 64),
 		timeout:   timeout,
 		lastTick:  time.Now().Unix(),
-		protocol:  protocol,
-		processor: processor,
+		msgHandle: msgHandle,
 		server:    server}
 }
 
@@ -71,7 +69,7 @@ func (this *BaseTransport) Write() {
 
 }
 
-func (this *BaseTransport) Send(msg interface{}) error {
+func (this *BaseTransport) Send(data []byte) error {
 	return nil
 }
 

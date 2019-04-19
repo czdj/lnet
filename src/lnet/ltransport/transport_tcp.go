@@ -1,7 +1,6 @@
 package ltransport
 
 import (
-	"errors"
 	"fmt"
 	"go.uber.org/zap"
 	"io"
@@ -16,9 +15,9 @@ type TcpTransport struct {
 	Conn net.Conn
 }
 
-func NewTcpTransport(localAddr string, timeout int, protocol iface.IProtocol, processor iface.IProcessor, server iface.IServer, conn net.Conn) *TcpTransport {
+func NewTcpTransport(localAddr string, timeout int, msgHandle iface.IMsgHandle, server iface.IServer, conn net.Conn) *TcpTransport {
 	re := &TcpTransport{
-		BaseTransport: *NewBaseTransport(localAddr, timeout, protocol, processor, server),
+		BaseTransport: *NewBaseTransport(localAddr, timeout, msgHandle, server),
 		Conn:          conn,
 	}
 	if conn != nil {
@@ -54,7 +53,7 @@ func (this *TcpTransport) Listen() error {
 			continue
 		}
 
-		tcpTransport := NewTcpTransport(this.LocalAddr, lnet.DefMsgTimeout, this.protocol, this.processor, this.server, conn)
+		tcpTransport := NewTcpTransport(this.LocalAddr, lnet.DefMsgTimeout, this.msgHandle, this.server, conn)
 		this.server.GetTransportMgr().Add(tcpTransport)
 
 		this.OnNewConnect(tcpTransport)
@@ -115,10 +114,7 @@ func (this *TcpTransport) Read() {
 
 		this.lastTick = time.Now().Unix()
 
-		msg := lnet.MsgTypeInfo.NewMsg(msgPackge.GetTag())
-		this.protocol.Unmarshal(data, msg)
-
-		this.processor.Process(this, msg)
+		this.msgHandle.Process(this, msgPackge)
 	}
 }
 
@@ -158,7 +154,7 @@ func (this *TcpTransport) Write() {
 	}
 }
 
-func (this *TcpTransport) Send(msg interface{}) error {
+func (this *TcpTransport) Send(data []byte) error {
 	defer func() {
 		if err := recover(); err != nil {
 			lnet.Logger.Error("Send panic", zap.Any("err", err))
@@ -169,19 +165,6 @@ func (this *TcpTransport) Send(msg interface{}) error {
 	if this.IsStop() {
 		lnet.Logger.Info("Transport has been closed!!!")
 		return nil
-	}
-
-	encodeData, err := this.protocol.Marshal(msg)
-	if err != nil {
-		return err
-	}
-
-	dp := lnet.NewDataPack()
-	tag := lnet.MsgTypeInfo.Tag(msg)
-	data, err := dp.Pack(lnet.NewMsgPackage(tag, encodeData))
-	if err != nil {
-		lnet.Logger.Error("数据打包错误", zap.Uint32("tag", tag), zap.Any("err", err))
-		return errors.New("Pack error msg ")
 	}
 
 	select {

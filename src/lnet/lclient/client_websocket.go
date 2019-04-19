@@ -10,12 +10,13 @@ type WebsocketClient struct {
 	BaseClient
 }
 
-func NewWebsocketClient(netAddr string, protocol  iface.IProtocol, processor iface.IProcessor) *WebsocketClient{
+func NewWebsocketClient(localAddr string, protocol iface.IProtocol, msgHandle iface.IMsgHandle) *WebsocketClient {
 	WebsocketClient := &WebsocketClient{
-		BaseClient:BaseClient{
+		BaseClient: BaseClient{
 			NetType:   lnet.WebSocket,
-			NetAddr:   netAddr,
-			transport: ltransport.NewWebsocketTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,nil, nil),
+			LocalAddr: localAddr,
+			transport: ltransport.NewWebsocketTransport(localAddr, lnet.DefMsgTimeout, msgHandle, nil, nil),
+			msgHandle: msgHandle,
 		},
 	}
 

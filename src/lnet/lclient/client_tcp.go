@@ -10,12 +10,13 @@ type TcpClient struct {
 	BaseClient
 }
 
-func NewTcpClient(netAddr string, protocol iface.IProtocol, processor iface.IProcessor) *TcpClient {
+func NewTcpClient(localAddr string, protocol iface.IProtocol, msgHandle iface.IMsgHandle) *TcpClient {
 	tcpClient := &TcpClient{
 		BaseClient: BaseClient{
 			NetType:   lnet.TCP,
-			NetAddr:   netAddr,
-			transport: ltransport.NewTcpTransport(netAddr, lnet.DefMsgTimeout, protocol, processor, nil, nil),
+			LocalAddr: localAddr,
+			transport: ltransport.NewTcpTransport(localAddr, lnet.DefMsgTimeout, msgHandle, nil, nil),
+			msgHandle: msgHandle,
 		},
 	}
 

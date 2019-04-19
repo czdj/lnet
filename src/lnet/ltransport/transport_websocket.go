@@ -1,7 +1,6 @@
 package ltransport
 
 import (
-	"errors"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"lnet"
@@ -16,9 +15,9 @@ type WebsocketTransport struct {
 	Upgrader *websocket.Upgrader
 }
 
-func NewWebsocketTransport(localAddr string, timeout int, protocol iface.IProtocol, processor iface.IProcessor, server iface.IServer, conn *websocket.Conn) *WebsocketTransport {
+func NewWebsocketTransport(localAddr string, timeout int, msgHandle iface.IMsgHandle, server iface.IServer, conn *websocket.Conn) *WebsocketTransport {
 	re := &WebsocketTransport{
-		BaseTransport: *NewBaseTransport(localAddr, timeout, protocol, processor, server),
+		BaseTransport: *NewBaseTransport(localAddr, timeout, msgHandle, server),
 		Conn:          conn,
 		Upgrader:      &websocket.Upgrader{},
 	}
@@ -40,7 +39,7 @@ func (this *WebsocketTransport) websocketConnHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	websocketTransport := NewWebsocketTransport(this.LocalAddr, lnet.DefMsgTimeout, this.protocol, this.processor, this.server, conn)
+	websocketTransport := NewWebsocketTransport(this.LocalAddr, lnet.DefMsgTimeout, this.msgHandle, this.server, conn)
 	this.server.GetTransportMgr().Add(websocketTransport)
 	this.OnNewConnect(websocketTransport)
 }
@@ -93,10 +92,7 @@ func (this *WebsocketTransport) Read() {
 			break
 		}
 
-		msg := lnet.MsgTypeInfo.NewMsg(msgPackage.GetTag())
-		this.protocol.Unmarshal(msgPackage.GetData(), msg)
-
-		this.processor.Process(this, msg)
+		this.msgHandle.Process(this, msgPackage)
 	}
 }
 
@@ -136,7 +132,7 @@ func (this *WebsocketTransport) Write() {
 	}
 }
 
-func (this *WebsocketTransport) Send(msg interface{}) error {
+func (this *WebsocketTransport) Send(data []byte) error {
 	defer func() {
 		if err := recover(); err != nil {
 			lnet.Logger.Error("Send panic", zap.Any("err", err))
@@ -147,20 +143,6 @@ func (this *WebsocketTransport) Send(msg interface{}) error {
 	if this.IsStop() {
 		lnet.Logger.Info("Transport has been closed!!!")
 		return nil
-	}
-
-	encodeData, err := this.protocol.Marshal(msg)
-	if err != nil {
-		lnet.Logger.Error("数据编码错误", zap.Any("err", err))
-		return err
-	}
-
-	dp := lnet.NewDataPack()
-	tag := lnet.MsgTypeInfo.Tag(msg)
-	data, err := dp.Pack(lnet.NewMsgPackage(tag, encodeData))
-	if err != nil {
-		lnet.Logger.Error("数据打包错误", zap.Uint32("tag", tag), zap.Any("err", err))
-		return errors.New("Pack error msg ")
 	}
 
 	select {
