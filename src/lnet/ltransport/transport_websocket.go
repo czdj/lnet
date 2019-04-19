@@ -6,7 +6,6 @@ import (
 	"lnet"
 	"lnet/iface"
 	"net/http"
-	"sync/atomic"
 	"time"
 	"unsafe"
 )
@@ -19,16 +18,7 @@ type WebsocketTransport struct {
 
 func NewWebsocketTransport(netAddr string, timeout int, protocol  iface.IProtocol, processor iface.IProcessor,server iface.IServer,conn *websocket.Conn) *WebsocketTransport{
 	return  &WebsocketTransport{
-		BaseTransport:BaseTransport{
-			Id:          atomic.AddUint32(&transportId, 1),
-			LocalAddr:   netAddr,
-			stopFlag:    0,
-			cwrite:      make(chan *[]byte,64),
-			timeout:     timeout,
-			lastTick:    time.Now().Unix(),
-			protocol:    protocol,
-			processor:   processor,
-			server:      server},
+		BaseTransport:*NewBaseTransport(netAddr,timeout,protocol,processor,server),
 		Conn: conn,
 		Upgrader:&websocket.Upgrader{},
 	}

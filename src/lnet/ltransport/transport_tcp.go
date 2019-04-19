@@ -6,7 +6,6 @@ import (
 	"lnet"
 	"lnet/iface"
 	"net"
-	"sync/atomic"
 	"time"
 	"unsafe"
 )
@@ -18,16 +17,7 @@ type TcpTransport struct {
 
 func NewTcpTransport(netAddr string, timeout int, protocol  iface.IProtocol, processor iface.IProcessor,server iface.IServer, conn net.Conn) *TcpTransport{
 	return  &TcpTransport{
-		BaseTransport:BaseTransport{
-			Id:          atomic.AddUint32(&transportId, 1),
-			LocalAddr:   netAddr,
-			stopFlag:    0,
-			cwrite:      make(chan *[]byte,64),
-			timeout:     timeout,
-			lastTick:    time.Now().Unix(),
-			protocol:    protocol,
-			processor:   processor,
-			server:      server},
+		BaseTransport:*NewBaseTransport(netAddr,timeout,protocol,processor,server),
 		Conn: conn,
 	}
 }
