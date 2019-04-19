@@ -12,6 +12,7 @@ func main() {
 	lnet.Logger = lnet.InitLogger("./logs/log.log","")
 	processor := &lprocess.BaseProcessor{}
 	protocol := &lprotocol.PbProtocol{}
+	//protocol := &lprotocol.GobProtocol{}
 	lnet.MsgTypeInfo.Register(11,lnet.MessageTest{})
 	lnet.MsgTypeInfo.Register(12,pb.GameItem{})
 
