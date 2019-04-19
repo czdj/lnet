@@ -10,19 +10,17 @@ type TcpServer struct {
 	BaseServer
 }
 
-func NewTcpServer(netAddr string, protocol  iface.IProtocol, processor iface.IProcessor) *TcpServer{
+func NewTcpServer(localAddr string, protocol iface.IProtocol, processor iface.IProcessor) *TcpServer {
 	tcpServer := &TcpServer{
-		BaseServer:BaseServer{
-			NetType:lnet.TCP,
-			NetAddr:netAddr,
-			transport: nil,
-			transportManager:lnet.NewTransportManager(),
+		BaseServer: BaseServer{
+			NetType:          lnet.TCP,
+			LocalAddr:        localAddr,
+			transport:        nil,
+			transportManager: lnet.NewTransportManager(),
 		},
 	}
-	t := ltransport.NewTcpTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,tcpServer, nil)
+	t := ltransport.NewTcpTransport(localAddr, lnet.DefMsgTimeout, protocol, processor, tcpServer, nil)
 	tcpServer.SetTransport(t)
 
 	return tcpServer
 }
-
-

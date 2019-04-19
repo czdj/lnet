@@ -10,17 +10,17 @@ type WebsocketServer struct {
 	BaseServer
 }
 
-func NewWebsocketServer(netAddr string, protocol  iface.IProtocol, processor iface.IProcessor) *WebsocketServer{
+func NewWebsocketServer(localAddr string, protocol  iface.IProtocol, processor iface.IProcessor) *WebsocketServer{
 	websocketServer := &WebsocketServer{
 		BaseServer:BaseServer{
 			NetType:lnet.WebSocket,
-			NetAddr:netAddr,
+			LocalAddr:localAddr,
 			transport: nil,
 			transportManager:lnet.NewTransportManager(),
 		},
 	}
 
-	t := ltransport.NewWebsocketTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,websocketServer, nil)
+	t := ltransport.NewWebsocketTransport(localAddr,lnet.DefMsgTimeout,protocol,processor,websocketServer, nil)
 	websocketServer.SetTransport(t)
 
 	return websocketServer

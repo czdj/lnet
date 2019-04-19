@@ -1,13 +1,14 @@
 package ltransport
 
 import (
+	"errors"
+	"fmt"
 	"go.uber.org/zap"
 	"io"
 	"lnet"
 	"lnet/iface"
 	"net"
 	"time"
-	"unsafe"
 )
 
 type TcpTransport struct {
@@ -15,41 +16,45 @@ type TcpTransport struct {
 	Conn net.Conn
 }
 
-func NewTcpTransport(netAddr string, timeout int, protocol  iface.IProtocol, processor iface.IProcessor,server iface.IServer, conn net.Conn) *TcpTransport{
-	return  &TcpTransport{
-		BaseTransport:*NewBaseTransport(netAddr,timeout,protocol,processor,server),
-		Conn: conn,
+func NewTcpTransport(localAddr string, timeout int, protocol iface.IProtocol, processor iface.IProcessor, server iface.IServer, conn net.Conn) *TcpTransport {
+	re := &TcpTransport{
+		BaseTransport: *NewBaseTransport(localAddr, timeout, protocol, processor, server),
+		Conn:          conn,
 	}
+	if conn != nil {
+		re.RemoteAddr = conn.RemoteAddr().String()
+	}
+	return re
 }
 
 func (this *TcpTransport) Listen() error {
-	tcpAddr, err := net.ResolveTCPAddr("tcp", this.LocalAddr);
-	if err != nil{
-		lnet.Logger.Error("Tcp Addr Err",zap.Any("err",err))
+	tcpAddr, err := net.ResolveTCPAddr("tcp", this.LocalAddr)
+	if err != nil {
+		lnet.Logger.Error("Tcp Addr Err", zap.Any("err", err))
 		return err
 	}
 
-	listen, err := net.ListenTCP("tcp", tcpAddr);
-	if err != nil{
-		lnet.Logger.Error("tcp listen err",zap.Any("err",err))
+	listen, err := net.ListenTCP("tcp", tcpAddr)
+	if err != nil {
+		lnet.Logger.Error("tcp listen err", zap.Any("err", err))
 		return err
 	}
-	lnet.Logger.Info("TcpServer is listening",zap.Any("addr",tcpAddr))
+	lnet.Logger.Info("TcpServer is listening", zap.Any("addr", tcpAddr))
 
-	for !this.IsStop(){
-		conn, err := listen.Accept();
-		if err != nil{
-			lnet.Logger.Error("tcp Accept err",zap.Any("err",err))
+	for !this.IsStop() {
+		conn, err := listen.Accept()
+		if err != nil {
+			lnet.Logger.Error("tcp Accept err", zap.Any("err", err))
 			this.stopFlag = 1
 			return err
 		}
 		///TODO:配置
-		if this.server.GetTransportMgr().Len() >= 30000{
+		if this.server.GetTransportMgr().Len() >= 30000 {
 			conn.Close()
 			continue
 		}
 
-		tcpTransport := NewTcpTransport(this.LocalAddr,lnet.DefMsgTimeout, this.protocol,this.processor,this.server,conn)
+		tcpTransport := NewTcpTransport(this.LocalAddr, lnet.DefMsgTimeout, this.protocol, this.processor, this.server, conn)
 		this.server.GetTransportMgr().Add(tcpTransport)
 
 		this.OnNewConnect(tcpTransport)
@@ -58,88 +63,94 @@ func (this *TcpTransport) Listen() error {
 	return nil
 }
 
-func (this *TcpTransport) Connect() error{
-	tcpAddr, err := net.ResolveTCPAddr("tcp", this.LocalAddr);
-	if err != nil{
-		lnet.Logger.Error("tcp addr err",zap.Any("err",err))
+func (this *TcpTransport) Connect() error {
+	tcpAddr, err := net.ResolveTCPAddr("tcp", this.LocalAddr)
+	if err != nil {
+		lnet.Logger.Error("tcp addr err", zap.Any("err", err))
 		return err
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
-	if err != nil{
-		lnet.Logger.Error("Connect Server err",zap.Any("err",err))
+	if err != nil {
+		lnet.Logger.Error("Connect Server err", zap.Any("err", err))
 		return err
 	}
-	lnet.Logger.Info("Connect Server ",zap.Any("Addr",tcpAddr))
+	lnet.Logger.Info("Connect Server ", zap.Any("Addr", tcpAddr))
 	this.Conn = conn
+	this.RemoteAddr = conn.RemoteAddr().String()
 
 	this.OnNewConnect(this)
 
 	return nil
 }
 
-func (this *TcpTransport) Read(){
+func (this *TcpTransport) Read() {
 	defer func() {
 		this.OnClosed()
 	}()
 
-	for !this.IsStop(){
-		head := lnet.PakgeHead{}
-		headData := make([]byte, unsafe.Sizeof(lnet.PakgeHead{}))
+	for !this.IsStop() {
+		dp := lnet.NewDataPack()
+
+		headData := make([]byte, dp.GetHeadLen())
 		_, err := io.ReadFull(this.Conn, headData)
 		if err != nil {
-			lnet.Logger.Error("IO Read Err",zap.Any("err",err))
+			lnet.Logger.Error("IO Read Err", zap.Any("err", err))
 			break
 		}
-		pakgeHead := (*lnet.PakgeHead)(unsafe.Pointer(&headData[0]))
-		head.Len = pakgeHead.Len
-		head.Tag = pakgeHead.Tag
 
-		data := make([]byte,head.Len)
+		msgPackge, err := dp.Unpack(headData)
+		if err != nil {
+			fmt.Println("unpack error ", err)
+			break
+		}
+
+		data := make([]byte, msgPackge.GetLen())
 		_, err = io.ReadFull(this.Conn, data)
 		if err != nil {
-			lnet.Logger.Error("IO Read Err",zap.Any("err",err))
+			lnet.Logger.Error("IO Read Err", zap.Any("err", err))
 			break
 		}
+		msgPackge.SetData(data)
 
 		this.lastTick = time.Now().Unix()
 
-		msg := lnet.MsgTypeInfo.NewMsg(head.Tag)
-		this.protocol.Unmarshal(data,msg)
+		msg := lnet.MsgTypeInfo.NewMsg(msgPackge.GetTag())
+		this.protocol.Unmarshal(data, msg)
 
-		this.processor.Process(this,msg)
+		this.processor.Process(this, msg)
 	}
 }
 
-func (this *TcpTransport) Write(){
+func (this *TcpTransport) Write() {
 	defer func() {
 		this.Conn.Close()
 		this.OnClosed()
 
 		if err := recover(); err != nil {
-			lnet.Logger.Error("Write panic",zap.Any("err",err))
+			lnet.Logger.Error("Write panic", zap.Any("err", err))
 			return
 		}
 	}()
 
 	var data *[]byte
 	tick := time.NewTimer(time.Duration(this.timeout) * time.Second)
-	for !this.IsStop(){
+	for !this.IsStop() {
 		select {
 		case data = <-this.cwrite:
 		case <-tick.C:
-			if this.IsTimeout(tick){
+			if this.IsTimeout(tick) {
 				this.OnClosed()
 			}
 		}
 
-		if data == nil{
+		if data == nil {
 			continue
 		}
 
-		_,err := this.Conn.Write(*data)
-		if err != nil{
-			lnet.Logger.Error("Write Err",zap.Any("err",err))
+		_, err := this.Conn.Write(*data)
+		if err != nil {
+			lnet.Logger.Error("Write Err", zap.Any("err", err))
 			break
 		}
 		data = nil
@@ -147,33 +158,31 @@ func (this *TcpTransport) Write(){
 	}
 }
 
-func (this *TcpTransport)Send(msg interface{})error{
+func (this *TcpTransport) Send(msg interface{}) error {
 	defer func() {
 		if err := recover(); err != nil {
-			lnet.Logger.Error("Send panic",zap.Any("err",err))
+			lnet.Logger.Error("Send panic", zap.Any("err", err))
 			return
 		}
 	}()
 
-	if this.IsStop(){
+	if this.IsStop() {
 		lnet.Logger.Info("Transport has been closed!!!")
 		return nil
 	}
 
 	encodeData, err := this.protocol.Marshal(msg)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
-	head := &lnet.PakgeHead{}
-	head.Tag = lnet.MsgTypeInfo.Tag(msg)
-	head.Len = uint16(len(encodeData))
-
-	data := make([]byte,unsafe.Sizeof(lnet.PakgeHead{}))
-	ptr := (*lnet.PakgeHead)(unsafe.Pointer(&data[0]))
-	ptr.Len = head.Len
-	ptr.Tag = head.Tag
-	data = append(data,encodeData...)
+	dp := lnet.NewDataPack()
+	tag := lnet.MsgTypeInfo.Tag(msg)
+	data, err := dp.Pack(lnet.NewMsgPackage(tag, encodeData))
+	if err != nil {
+		lnet.Logger.Error("数据打包错误", zap.Uint32("tag", tag), zap.Any("err", err))
+		return errors.New("Pack error msg ")
+	}
 
 	select {
 	case this.cwrite <- &data:
@@ -184,8 +193,7 @@ func (this *TcpTransport)Send(msg interface{})error{
 	return nil
 }
 
-func (this *TcpTransport) Close(){
+func (this *TcpTransport) Close() {
 	this.Conn.Close()
 	this.stopFlag = 1
 }
-

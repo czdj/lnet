@@ -8,7 +8,7 @@ import (
 type BaseServer struct {
 	Name string
 	NetType lnet.NetType
-	NetAddr string //IP:Port
+	LocalAddr string //IP:Port
 
 	transport iface.ITransport
 	transportManager iface.ITransportManager

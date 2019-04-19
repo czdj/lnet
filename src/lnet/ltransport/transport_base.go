@@ -25,10 +25,10 @@ type BaseTransport struct {
 	server    iface.IServer
 }
 
-func NewBaseTransport(netAddr string, timeout int, protocol iface.IProtocol, processor iface.IProcessor, server iface.IServer) *BaseTransport {
+func NewBaseTransport(localAddr string, timeout int, protocol iface.IProtocol, processor iface.IProcessor, server iface.IServer) *BaseTransport {
 	return &BaseTransport{
 		Id:        atomic.AddUint32(&transportId, 1),
-		LocalAddr: netAddr,
+		LocalAddr: localAddr,
 		stopFlag:  0,
 		cwrite:    make(chan *[]byte, 64),
 		timeout:   timeout,
