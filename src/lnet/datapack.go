@@ -63,7 +63,7 @@ func (this *DataPack) Unpack(binaryData []byte) (iface.IMessagePackage, error) {
 	}
 
 	//判断dataLen的长度是否超出我们允许的最大包长度
-	if msg.Len > 1024*1024 {
+	if msg.Len > MAX_PKG_LEN {
 		return nil, errors.New("Too large msg data recieved")
 	}
 

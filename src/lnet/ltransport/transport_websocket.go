@@ -35,8 +35,14 @@ func (this *WebsocketTransport) websocketConnHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	WebsocketTransport := NewWebsocketTransport(this.LocalAddr, lnet.DefMsgTimeout, this.protocol, this.processor, this.server, conn)
-	this.OnNewConnect(WebsocketTransport)
+	if this.server.GetTransportMgr().Len() >= lnet.MAX_CONN {
+		conn.Close()
+		return
+	}
+
+	websocketTransport := NewWebsocketTransport(this.LocalAddr, lnet.DefMsgTimeout, this.protocol, this.processor, this.server, conn)
+	this.server.GetTransportMgr().Add(websocketTransport)
+	this.OnNewConnect(websocketTransport)
 }
 
 func (this *WebsocketTransport) Listen() error {

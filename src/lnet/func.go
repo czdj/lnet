@@ -5,6 +5,11 @@ import (
 	"reflect"
 )
 
+const
+(
+	MAX_CONN  = 10000
+	MAX_PKG_LEN = 1024*1024
+)
 var DefMsgTimeout int = 180 //秒
 
 //要处理的消息，需要在此处注册

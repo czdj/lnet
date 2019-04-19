@@ -49,7 +49,7 @@ func (this *TcpTransport) Listen() error {
 			return err
 		}
 		///TODO:配置
-		if this.server.GetTransportMgr().Len() >= 30000 {
+		if this.server.GetTransportMgr().Len() >= lnet.MAX_CONN {
 			conn.Close()
 			continue
 		}
