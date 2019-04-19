@@ -12,11 +12,11 @@ var Logger *zap.Logger
 func InitLogger(logpath string, loglevel string) *zap.Logger {
 	hook := lumberjack.Logger{
 		Filename:   logpath, // 日志文件路径
-		MaxSize:    64,     // 每个日志文件保存的最大尺寸 单位：M
+		MaxSize:    16,      // 每个日志文件保存的最大尺寸 单位：M
 		MaxBackups: 0,       // 日志文件最多保存多少个备份
 		MaxAge:     0,       // 文件最多保存多少天
 		LocalTime:  true,
-		Compress:   true,    // 是否压缩
+		Compress:   true, // 是否压缩
 	}
 
 	encoderConfig := zapcore.EncoderConfig{
@@ -30,7 +30,7 @@ func InitLogger(logpath string, loglevel string) *zap.Logger {
 		EncodeLevel:    zapcore.LowercaseLevelEncoder,  // 小写编码器
 		EncodeTime:     zapcore.ISO8601TimeEncoder,     // ISO8601 UTC 时间格式
 		EncodeDuration: zapcore.SecondsDurationEncoder, //
-		EncodeCaller:   zapcore.ShortCallerEncoder,//zapcore.FullCallerEncoder,      // 全路径编码器
+		EncodeCaller:   zapcore.ShortCallerEncoder,     //zapcore.FullCallerEncoder,      // 全路径编码器
 		EncodeName:     zapcore.FullNameEncoder,
 	}
 

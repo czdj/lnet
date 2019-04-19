@@ -50,18 +50,3 @@ const (
 	UDP
 	WebSocket
 )
-
-//网络包的格式为包头+包体组成，为TLV格式
-type PakgeHead struct {
-	Tag uint32
-	Len uint32
-}
-type Pakge struct {
-	head PakgeHead
-	data []byte
-}
-
-//自定义消息类型
-type MessageTest struct {
-	Data string
-}

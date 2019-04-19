@@ -1,7 +1,8 @@
 package lnet
 
+//TLV格式
 type MessagePackage struct {
-	Tag  uint32 //消息的ID
+	Tag  uint32 //消息的Tag
 	Len  uint32 //消息的长度
 	Data []byte //消息的内容
 }
