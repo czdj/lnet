@@ -12,11 +12,12 @@ import (
 func main1() {
 	lnet.Logger = lnet.InitLogger("./logs/log.log", "")
 
-	lnet.MsgTypeInfo.Register(11, lnet.MessageTest{})
 	lnet.MsgTypeInfo.Register(12, pb.GameItem{})
 
 	processor := &lprocess.BaseProcessor{}
 	protocol := &lprotocol.PbProtocol{}
+	//protocol := &lprotocol.GobProtocol{}
+
 	client := lclient.NewTcpClient("127.0.0.1:9000", protocol, processor)
 	//client :=  lclient.NewWebsocketClient("ws://127.0.0.1:9000/ws", protocol,processor)
 	client.Connect()
