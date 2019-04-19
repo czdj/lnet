@@ -1,9 +1,9 @@
-package client
+package lclient
 
 import (
 	"lnet"
 	"lnet/iface"
-	"lnet/transport"
+	"lnet/ltransport"
 )
 
 type TcpClient struct {
@@ -13,9 +13,9 @@ type TcpClient struct {
 func NewTcpClient(netAddr string, protocol  iface.IProtocol, processor iface.IProcessor) *TcpClient{
 	tcpClient := &TcpClient{
 		BaseClient:BaseClient{
-			NetType:lnet.TCP,
-			NetAddr:netAddr,
-			transport: transport.NewTcpTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,nil,nil),
+			NetType:   lnet.TCP,
+			NetAddr:   netAddr,
+			transport: ltransport.NewTcpTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,nil,nil),
 		},
 	}
 

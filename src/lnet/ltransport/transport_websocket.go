@@ -1,4 +1,4 @@
-package transport
+package ltransport
 
 import (
 	"github.com/gorilla/websocket"

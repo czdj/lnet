@@ -1,9 +1,9 @@
-package server
+package lserver
 
 import (
 	"lnet"
 	"lnet/iface"
-	"lnet/transport"
+	"lnet/ltransport"
 )
 
 type TcpServer struct {
@@ -19,7 +19,7 @@ func NewTcpServer(netAddr string, protocol  iface.IProtocol, processor iface.IPr
 			transportManager:lnet.NewTransportManager(),
 		},
 	}
-	t := transport.NewTcpTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,tcpServer, nil)
+	t := ltransport.NewTcpTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,tcpServer, nil)
 	tcpServer.SetTransport(t)
 
 	return tcpServer

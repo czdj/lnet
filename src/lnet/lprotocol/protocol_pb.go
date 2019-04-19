@@ -1,4 +1,4 @@
-package protocol
+package lprotocol
 
 import (
 	"github.com/golang/protobuf/proto"

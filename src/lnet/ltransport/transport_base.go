@@ -1,4 +1,4 @@
-package transport
+package ltransport
 
 import (
 	"go.uber.org/zap"
@@ -62,7 +62,7 @@ func (this *BaseTransport) Close(){
 func (this *BaseTransport) OnClosed(){
 	if atomic.CompareAndSwapInt32(&this.stopFlag,0,1){
 		close(this.cwrite)
-		lnet.Logger.Info("connect closed !")
+		this.server.GetTransportMgr().Remove(this)
 	}
 }
 func (this *BaseTransport)IsStop() bool{

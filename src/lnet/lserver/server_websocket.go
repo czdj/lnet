@@ -1,9 +1,9 @@
-package server
+package lserver
 
 import (
 	"lnet"
 	"lnet/iface"
-	"lnet/transport"
+	"lnet/ltransport"
 )
 
 type WebsocketServer struct {
@@ -20,7 +20,7 @@ func NewWebsocketServer(netAddr string, protocol  iface.IProtocol, processor ifa
 		},
 	}
 
-	t := transport.NewWebsocketTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,websocketServer, nil)
+	t := ltransport.NewWebsocketTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,websocketServer, nil)
 	websocketServer.SetTransport(t)
 
 	return websocketServer

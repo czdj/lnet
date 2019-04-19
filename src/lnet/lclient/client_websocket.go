@@ -1,9 +1,9 @@
-package client
+package lclient
 
 import (
 	"lnet"
 	"lnet/iface"
-	"lnet/transport"
+	"lnet/ltransport"
 )
 
 type WebsocketClient struct {
@@ -13,9 +13,9 @@ type WebsocketClient struct {
 func NewWebsocketClient(netAddr string, protocol  iface.IProtocol, processor iface.IProcessor) *WebsocketClient{
 	WebsocketClient := &WebsocketClient{
 		BaseClient:BaseClient{
-			NetType:lnet.WebSocket,
-			NetAddr:netAddr,
-			transport: transport.NewWebsocketTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,nil),
+			NetType:   lnet.WebSocket,
+			NetAddr:   netAddr,
+			transport: ltransport.NewWebsocketTransport(netAddr,lnet.DefMsgTimeout,protocol,processor,nil, nil),
 		},
 	}
 
