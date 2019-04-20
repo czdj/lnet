@@ -8,9 +8,10 @@ import (
 )
 
 type BaseMsgHandle struct {
-	msgTagTypeMap map[uint32]reflect.Type
-	msgTypeTagMap map[reflect.Type]uint32
-	protocol      iface.IProtocol
+	msgTagTypeMap    map[uint32]reflect.Type
+	msgTypeTagMap    map[reflect.Type]uint32
+	protocol         iface.IProtocol
+	onTransportClose func(transport iface.ITransport)
 }
 
 func NewBaseMsgHandle(protocol iface.IProtocol) *BaseMsgHandle {
@@ -86,4 +87,16 @@ func (this *BaseMsgHandle) Process(itransport iface.ITransport, msgPackage iface
 	msgPkg := this.CreateMessagePackage(msg)
 
 	itransport.Send(msgPkg)
+}
+
+func (this *BaseMsgHandle) SetOnTransportClose(f func(transport iface.ITransport)) {
+	this.onTransportClose = f
+}
+
+func (this *BaseMsgHandle) OnTransportClose(transport iface.ITransport) {
+	if this.onTransportClose != nil {
+		this.onTransportClose(transport)
+	}
+
+	lnet.Logger.Info("OnTransportClose")
 }

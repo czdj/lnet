@@ -47,7 +47,7 @@ func (this *TcpTransport) Listen() error {
 			this.stopFlag = 1
 			return err
 		}
-		///TODO:配置
+
 		if this.server.GetTransportMgr().Len() >= lnet.MAX_CONN {
 			conn.Close()
 			continue
@@ -142,6 +142,7 @@ func (this *TcpTransport) Write() {
 		if msgPkg == nil {
 			select {
 			case msgPkg = <-this.cwrite:
+				///tip:通道关闭读出来的数据为空
 				if msgPkg != nil {
 					data, err = dp.Pack(msgPkg)
 					if err != nil {

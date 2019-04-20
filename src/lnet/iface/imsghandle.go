@@ -10,4 +10,6 @@ type IMsgHandle interface {
 	CreateMessage(msgPkg IMessagePackage) interface{}
 	CreateMessagePackage(msg interface{}) IMessagePackage
 	Process(transport ITransport, msgPackage IMessagePackage)
+	SetOnTransportClose(f func(transport ITransport))
+	OnTransportClose(transport ITransport)
 }

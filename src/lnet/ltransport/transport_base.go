@@ -83,8 +83,10 @@ func (this *BaseTransport) OnClosed() {
 		if this.server != nil {
 			this.server.GetTransportMgr().Remove(this)
 		}
+		this.msgHandle.OnTransportClose(this)
 	}
 }
+
 func (this *BaseTransport) IsStop() bool {
 	return this.stopFlag == 1
 }
