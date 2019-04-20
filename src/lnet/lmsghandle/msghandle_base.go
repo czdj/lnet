@@ -1,7 +1,6 @@
 package lmsghandle
 
 import (
-	"fmt"
 	"go.uber.org/zap"
 	"lnet"
 	"lnet/iface"
@@ -17,6 +16,7 @@ type BaseMsgHandle struct {
 func NewBaseMsgHandle(protocol iface.IProtocol) *BaseMsgHandle {
 	msgHandle := &BaseMsgHandle{msgTagTypeMap: make(map[uint32]reflect.Type), msgTypeTagMap: make(map[reflect.Type]uint32)}
 	msgHandle.SetProtocol(protocol)
+
 	return msgHandle
 }
 func (this *BaseMsgHandle) RegisterMsg(tag uint32, msg interface{}) {
@@ -28,7 +28,7 @@ func (this *BaseMsgHandle) RegisterMsg(tag uint32, msg interface{}) {
 func (this *BaseMsgHandle) NewMsg(tag uint32) interface{} {
 	msgType, err := this.msgTagTypeMap[tag]
 	if err == false {
-		fmt.Println("Msg Type Err!")
+		lnet.Logger.Error("Msg Type Err!")
 		return nil
 	}
 
@@ -40,25 +40,25 @@ func (this *BaseMsgHandle) NewMsg(tag uint32) interface{} {
 func (this *BaseMsgHandle) GetMsgTag(msg interface{}) uint32 {
 	tag, err := this.msgTypeTagMap[reflect.TypeOf(msg).Elem()]
 	if err == false {
-		fmt.Println("Msg Type Err!")
+		lnet.Logger.Error("Msg Type Err!")
 		return 0
 	}
 
 	return tag
 }
 
-func (this *BaseMsgHandle) SetProtocol (protocol iface.IProtocol){
+func (this *BaseMsgHandle) SetProtocol(protocol iface.IProtocol) {
 	this.protocol = protocol
 }
 
-func (this *BaseMsgHandle) GetProtocol ( )iface.IProtocol{
+func (this *BaseMsgHandle) GetProtocol() iface.IProtocol {
 	return this.protocol
 }
 
 func (this *BaseMsgHandle) Process(itransport iface.ITransport, msgPackage iface.IMessagePackage) {
 	msg := this.NewMsg(msgPackage.GetTag())
 	err := this.protocol.Unmarshal(msgPackage.GetData(), msg)
-	if err != nil{
+	if err != nil {
 		lnet.Logger.Error("msg Unmarshal err", zap.Any("err", err))
 		return
 	}
@@ -69,12 +69,8 @@ func (this *BaseMsgHandle) Process(itransport iface.ITransport, msgPackage iface
 		lnet.Logger.Error("msg marshal err", zap.Any("err", err))
 		return
 	}
-	dp := lnet.NewDataPack()
 	tag := this.GetMsgTag(msg)
-	data, err := dp.Pack(lnet.NewMsgPackage(tag, encodeData))
-	if err != nil {
-		lnet.Logger.Error("数据打包错误", zap.Uint32("tag", tag), zap.Any("err", err))
-		return
-	}
-	itransport.Send(data)
+	msgPkg := lnet.NewMsgPackage(tag, encodeData)
+
+	itransport.Send(msgPkg)
 }

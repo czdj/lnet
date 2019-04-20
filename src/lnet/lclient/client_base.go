@@ -26,13 +26,8 @@ func (this *BaseClient) Send(msg interface{}) error {
 		return errors.New("msg marshal err")
 	}
 
-	dp := lnet.NewDataPack()
 	tag := this.msgHandle.GetMsgTag(msg)
-	data, err := dp.Pack(lnet.NewMsgPackage(tag, encodeData))
-	if err != nil {
-		lnet.Logger.Error("数据打包错误", zap.Uint32("tag", tag), zap.Any("err", err))
-		return errors.New("数据打包错误")
-	}
+	data := lnet.NewMsgPackage(tag, encodeData)
 
 	return this.transport.Send(data)
 }

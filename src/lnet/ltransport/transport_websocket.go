@@ -108,22 +108,28 @@ func (this *WebsocketTransport) Write() {
 		}
 	}()
 
-	var data *[]byte
+	var msgPkg iface.IMessagePackage
+	dp := lnet.NewDataPack()
 	tick := time.NewTimer(time.Duration(this.timeout) * time.Second)
 	for !this.IsStop() {
 		select {
-		case data = <-this.cwrite:
+		case msgPkg = <-this.cwrite:
 		case <-tick.C:
 			if this.IsTimeout(tick) {
 				this.OnClosed()
 			}
 		}
 
-		if data == nil {
+		if msgPkg == nil {
 			continue
 		}
 
-		err := this.Conn.WriteMessage(websocket.BinaryMessage, *data)
+		data, err := dp.Pack(msgPkg)
+		if err != nil {
+			lnet.Logger.Error("Pack Err", zap.Any("err", err))
+			break
+		}
+		err = this.Conn.WriteMessage(websocket.BinaryMessage, data)
 		if err != nil {
 			lnet.Logger.Error("Write Err", zap.Any("err", err))
 			break
@@ -131,9 +137,10 @@ func (this *WebsocketTransport) Write() {
 		data = nil
 		this.lastTick = time.Now().Unix()
 	}
+	tick.Stop()
 }
 
-func (this *WebsocketTransport) Send(data []byte) error {
+func (this *WebsocketTransport) Send(msgPkg iface.IMessagePackage) error {
 	defer func() {
 		if err := recover(); err != nil {
 			lnet.Logger.Error("Send panic", zap.Any("err", err))
@@ -147,10 +154,10 @@ func (this *WebsocketTransport) Send(data []byte) error {
 	}
 
 	select {
-	case this.cwrite <- &data:
+	case this.cwrite <- msgPkg:
 	default:
 		lnet.Logger.Info("write buf full!!!")
-		this.cwrite <- &data
+		this.cwrite <- msgPkg
 	}
 	return nil
 }

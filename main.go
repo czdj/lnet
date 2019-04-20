@@ -21,8 +21,8 @@ func serverStart() {
 	//protocol := &lprotocol.GobProtocol{}
 	msgHandle.RegisterMsg(12, pb.GameItem{})
 
-	//server := lserver.NewTcpServer("127.0.0.1:9000", msgHandle)
-	server := lserver.NewWebsocketServer("127.0.0.1:9000", msgHandle)
+	server := lserver.NewTcpServer("127.0.0.1:9000", msgHandle)
+	//server := lserver.NewWebsocketServer("127.0.0.1:9000", msgHandle)
 
 	server.Start()
 }
@@ -34,8 +34,8 @@ func clientStart() {
 	msgHandle := lmsghandle.NewBaseMsgHandle(protocol)
 	msgHandle.RegisterMsg(12, pb.GameItem{})
 
-	//client := lclient.NewTcpClient("127.0.0.1:9000", msgHandle)
-	client := lclient.NewWebsocketClient("ws://127.0.0.1:9000/ws", msgHandle)
+	client := lclient.NewTcpClient("127.0.0.1:9000", msgHandle)
+	//client := lclient.NewWebsocketClient("ws://127.0.0.1:9000/ws", msgHandle)
 	client.Connect()
 
 	msg := &pb.GameItem{Id: 1, Type: 2, Count: 3}

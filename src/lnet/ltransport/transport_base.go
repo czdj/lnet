@@ -16,7 +16,7 @@ type BaseTransport struct {
 	LocalAddr  string
 	RemoteAddr string
 	stopFlag   int32
-	cwrite     chan *[]byte
+	cwrite     chan iface.IMessagePackage
 	timeout    int //传输超时
 	lastTick   int64
 
@@ -29,7 +29,7 @@ func NewBaseTransport(localAddr string, timeout int, msgHandle iface.IMsgHandle,
 		Id:        atomic.AddUint32(&transportId, 1),
 		LocalAddr: localAddr,
 		stopFlag:  0,
-		cwrite:    make(chan *[]byte, 64),
+		cwrite:    make(chan iface.IMessagePackage, 64),
 		timeout:   timeout,
 		lastTick:  time.Now().Unix(),
 		msgHandle: msgHandle,
@@ -69,7 +69,7 @@ func (this *BaseTransport) Write() {
 
 }
 
-func (this *BaseTransport) Send(data []byte) error {
+func (this *BaseTransport) Send(msgPkg iface.IMessagePackage) error {
 	return nil
 }
 

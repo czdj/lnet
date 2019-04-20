@@ -14,7 +14,7 @@ type ITransport interface {
 	OnNewConnect(transport ITransport)
 	Read()
 	Write()
-	Send(data []byte) error
+	Send(msgPkg IMessagePackage) error
 	Close()
 	OnClosed()
 	IsStop() bool

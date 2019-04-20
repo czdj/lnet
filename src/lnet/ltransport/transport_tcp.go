@@ -131,32 +131,49 @@ func (this *TcpTransport) Write() {
 		}
 	}()
 
-	var data *[]byte
+	var msgPkg iface.IMessagePackage
+	var data []byte
+	var err error
+	dp := lnet.NewDataPack()
+	writeNum := 0
 	tick := time.NewTimer(time.Duration(this.timeout) * time.Second)
 	for !this.IsStop() {
-		select {
-		case data = <-this.cwrite:
-		case <-tick.C:
-			if this.IsTimeout(tick) {
-				this.OnClosed()
+		if msgPkg == nil {
+			select {
+			case msgPkg = <-this.cwrite:
+				data, err = dp.Pack(msgPkg)
+				if err != nil {
+					lnet.Logger.Error("Pack Err", zap.Any("err", err))
+					return
+				}
+			case <-tick.C:
+				if this.IsTimeout(tick) {
+					this.OnClosed()
+				}
 			}
 		}
 
-		if data == nil {
+		if msgPkg == nil {
 			continue
 		}
 
-		_, err := this.Conn.Write(*data)
+		n, err := this.Conn.Write(data[writeNum:])
 		if err != nil {
 			lnet.Logger.Error("Write Err", zap.Any("err", err))
 			break
 		}
-		data = nil
+		writeNum += n
+		if writeNum == len(data) {
+			msgPkg = nil
+			writeNum = 0
+		}
+
 		this.lastTick = time.Now().Unix()
 	}
+	tick.Stop()
 }
 
-func (this *TcpTransport) Send(data []byte) error {
+func (this *TcpTransport) Send(msgPkg iface.IMessagePackage) error {
 	defer func() {
 		if err := recover(); err != nil {
 			lnet.Logger.Error("Send panic", zap.Any("err", err))
@@ -170,10 +187,10 @@ func (this *TcpTransport) Send(data []byte) error {
 	}
 
 	select {
-	case this.cwrite <- &data:
+	case this.cwrite <- msgPkg:
 	default:
 		lnet.Logger.Info("write buf full!!!")
-		this.cwrite <- &data
+		this.cwrite <- msgPkg
 	}
 	return nil
 }
