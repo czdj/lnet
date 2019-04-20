@@ -59,6 +59,7 @@ func (this *WebsocketTransport) Listen() error {
 func (this *WebsocketTransport) Connect() error {
 	conn, _, err := websocket.DefaultDialer.Dial(this.LocalAddr, nil)
 	if err != nil {
+		this.stopFlag = 1
 		lnet.Logger.Error("Connect err", zap.Any("err", err))
 		return err
 	}
@@ -155,6 +156,8 @@ func (this *WebsocketTransport) Send(data []byte) error {
 }
 
 func (this *WebsocketTransport) Close() {
-	this.Conn.Close()
+	if this.Conn != nil {
+		this.Conn.Close()
+	}
 	this.stopFlag = 1
 }

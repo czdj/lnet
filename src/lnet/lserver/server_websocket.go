@@ -10,8 +10,7 @@ type WebsocketServer struct {
 	BaseServer
 }
 
-func NewWebsocketServer(localAddr string, protocol iface.IProtocol, msgHandle iface.IMsgHandle) *WebsocketServer {
-	msgHandle.SetProtocol(protocol)
+func NewWebsocketServer(localAddr string, msgHandle iface.IMsgHandle) *WebsocketServer {
 	websocketServer := &WebsocketServer{
 		BaseServer: BaseServer{
 			NetType:          lnet.WebSocket,

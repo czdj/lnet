@@ -10,7 +10,7 @@ type TcpClient struct {
 	BaseClient
 }
 
-func NewTcpClient(localAddr string, protocol iface.IProtocol, msgHandle iface.IMsgHandle) *TcpClient {
+func NewTcpClient(localAddr string, msgHandle iface.IMsgHandle) *TcpClient {
 	tcpClient := &TcpClient{
 		BaseClient: BaseClient{
 			NetType:   lnet.TCP,

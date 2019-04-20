@@ -10,7 +10,7 @@ type TcpServer struct {
 	BaseServer
 }
 
-func NewTcpServer(localAddr string, protocol iface.IProtocol, msgHandle iface.IMsgHandle) *TcpServer {
+func NewTcpServer(localAddr string, msgHandle iface.IMsgHandle) *TcpServer {
 	tcpServer := &TcpServer{
 		BaseServer: BaseServer{
 			NetType:          lnet.TCP,

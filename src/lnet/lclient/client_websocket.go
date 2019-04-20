@@ -10,7 +10,7 @@ type WebsocketClient struct {
 	BaseClient
 }
 
-func NewWebsocketClient(localAddr string, protocol iface.IProtocol, msgHandle iface.IMsgHandle) *WebsocketClient {
+func NewWebsocketClient(localAddr string, msgHandle iface.IMsgHandle) *WebsocketClient {
 	WebsocketClient := &WebsocketClient{
 		BaseClient: BaseClient{
 			NetType:   lnet.WebSocket,

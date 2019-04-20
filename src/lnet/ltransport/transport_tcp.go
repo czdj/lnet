@@ -65,12 +65,14 @@ func (this *TcpTransport) Listen() error {
 func (this *TcpTransport) Connect() error {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", this.LocalAddr)
 	if err != nil {
+		this.stopFlag = 1
 		lnet.Logger.Error("tcp addr err", zap.Any("err", err))
 		return err
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
+		this.stopFlag = 1
 		lnet.Logger.Error("Connect Server err", zap.Any("err", err))
 		return err
 	}
@@ -177,6 +179,8 @@ func (this *TcpTransport) Send(data []byte) error {
 }
 
 func (this *TcpTransport) Close() {
-	this.Conn.Close()
+	if this.Conn != nil {
+		this.Conn.Close()
+	}
 	this.stopFlag = 1
 }
