@@ -1,10 +1,12 @@
 package lnet
 
 import (
+	"fmt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
+	"runtime"
 )
 
 var Logger *zap.Logger
@@ -67,4 +69,11 @@ func InitLogger(logpath string, loglevel string) *zap.Logger {
 	logger.Info("log 初始化成功")
 
 	return logger
+}
+
+func LogStack() {
+	buf := make([]byte, 1<<12)
+	info := string(buf[:runtime.Stack(buf, false)])
+	fmt.Println(info)
+	Logger.Sugar().Errorw(info)
 }

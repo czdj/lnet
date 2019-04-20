@@ -127,6 +127,7 @@ func (this *TcpTransport) Write() {
 
 		if err := recover(); err != nil {
 			lnet.Logger.Error("Write panic", zap.Any("err", err))
+			lnet.LogStack()
 			return
 		}
 	}()
