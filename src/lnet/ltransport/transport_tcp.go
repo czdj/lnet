@@ -141,10 +141,12 @@ func (this *TcpTransport) Write() {
 		if msgPkg == nil {
 			select {
 			case msgPkg = <-this.cwrite:
-				data, err = dp.Pack(msgPkg)
-				if err != nil {
-					lnet.Logger.Error("Pack Err", zap.Any("err", err))
-					return
+				if msgPkg != nil {
+					data, err = dp.Pack(msgPkg)
+					if err != nil {
+						lnet.Logger.Error("Pack Err", zap.Any("err", err))
+						return
+					}
 				}
 			case <-tick.C:
 				if this.IsTimeout(tick) {
@@ -177,7 +179,6 @@ func (this *TcpTransport) Send(msgPkg iface.IMessagePackage) error {
 	defer func() {
 		if err := recover(); err != nil {
 			lnet.Logger.Error("Send panic", zap.Any("err", err))
-			return
 		}
 	}()
 

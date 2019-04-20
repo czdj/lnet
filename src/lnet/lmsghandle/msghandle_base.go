@@ -55,22 +55,35 @@ func (this *BaseMsgHandle) GetProtocol() iface.IProtocol {
 	return this.protocol
 }
 
-func (this *BaseMsgHandle) Process(itransport iface.ITransport, msgPackage iface.IMessagePackage) {
-	msg := this.NewMsg(msgPackage.GetTag())
-	err := this.protocol.Unmarshal(msgPackage.GetData(), msg)
+func (this *BaseMsgHandle) CreateMessage(msgPkg iface.IMessagePackage) interface{} {
+	msg := this.NewMsg(msgPkg.GetTag())
+	err := this.protocol.Unmarshal(msgPkg.GetData(), msg)
 	if err != nil {
 		lnet.Logger.Error("msg Unmarshal err", zap.Any("err", err))
-		return
+		return nil
 	}
-	lnet.Logger.Info("process msg", zap.Any("RemoteAddr", itransport.GetRemoteAddr()), zap.Any("msg", msg))
 
+	return msg
+}
+
+func (this *BaseMsgHandle) CreateMessagePackage(msg interface{}) iface.IMessagePackage {
 	encodeData, err := this.protocol.Marshal(msg)
 	if err != nil {
 		lnet.Logger.Error("msg marshal err", zap.Any("err", err))
-		return
+		return nil
 	}
 	tag := this.GetMsgTag(msg)
 	msgPkg := lnet.NewMsgPackage(tag, encodeData)
+
+	return msgPkg
+}
+
+func (this *BaseMsgHandle) Process(itransport iface.ITransport, msgPackage iface.IMessagePackage) {
+	msg := this.CreateMessage(msgPackage)
+
+	lnet.Logger.Info("process msg", zap.Any("RemoteAddr", itransport.GetRemoteAddr()), zap.Any("msg", msg))
+
+	msgPkg := this.CreateMessagePackage(msg)
 
 	itransport.Send(msgPkg)
 }

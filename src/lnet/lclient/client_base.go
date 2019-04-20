@@ -1,8 +1,6 @@
 package lclient
 
 import (
-	"errors"
-	"go.uber.org/zap"
 	"lnet"
 	"lnet/iface"
 )
@@ -20,14 +18,6 @@ func (this *BaseClient) Connect() error {
 }
 
 func (this *BaseClient) Send(msg interface{}) error {
-	encodeData, err := this.msgHandle.GetProtocol().Marshal(msg)
-	if err != nil {
-		lnet.Logger.Error("msg marshal err", zap.Any("err", err))
-		return errors.New("msg marshal err")
-	}
-
-	tag := this.msgHandle.GetMsgTag(msg)
-	data := lnet.NewMsgPackage(tag, encodeData)
-
-	return this.transport.Send(data)
+	msgPkg := this.msgHandle.CreateMessagePackage(msg)
+	return this.transport.Send(msgPkg)
 }
