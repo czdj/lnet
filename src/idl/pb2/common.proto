@@ -1,6 +1,16 @@
 syntax = "proto2";
 import "const_define.proto";
 
+message RpcReqInfo {
+	optional string uid = 1;
+	optional int32 test = 2;
+}
+
+message RpcRspInfo {
+	optional string uid = 1;
+	optional int32 Result = 2;
+}
+
 // 服务器时间
 message ServerTime
 {

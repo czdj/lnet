@@ -12,9 +12,7 @@ type BaseServer struct {
 	transport        iface.ITransport
 	transportManager iface.ITransportManager
 	msgHandle        iface.IMsgHandle
-	protocol         iface.IProtocol
 }
-
 
 func (this *BaseServer) SetTransport(transport iface.ITransport) {
 	this.transport = transport
