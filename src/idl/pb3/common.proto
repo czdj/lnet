@@ -2,12 +2,20 @@ syntax = "proto3";
 
 message RpcReqInfo {
     string uid = 1;
-    int32 test = 2;
 }
 
 message RpcRspInfo {
     string uid = 1;
-    int32 Result = 2;
+}
+
+message RpcReqData {
+     RpcReqInfo info = 1;
+     int32 req = 2;
+}
+
+message RpcRspData {
+    RpcRspInfo info = 1;
+    int32 rsp = 2;
 }
 
 message GameItem

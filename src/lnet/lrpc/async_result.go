@@ -11,7 +11,7 @@ import (
 
 type AsyncResult struct {
 	uid    string
-	result chan *pb.RpcRspInfo
+	result chan *pb.RpcRspData
 }
 
 var G_asyncResult *AsyncResultMgr = NewAsyncResultMgr()
@@ -19,7 +19,7 @@ var G_asyncResult *AsyncResultMgr = NewAsyncResultMgr()
 func NewAsyncResult(uid string) *AsyncResult {
 	return &AsyncResult{
 		uid:    uid,
-		result: make(chan *pb.RpcRspInfo, 1),
+		result: make(chan *pb.RpcRspData, 1),
 	}
 }
 
@@ -27,19 +27,19 @@ func (this *AsyncResult) GetUid() string {
 	return this.uid
 }
 
-func (this *AsyncResult) SetResult(data *pb.RpcRspInfo) {
+func (this *AsyncResult) SetResult(data *pb.RpcRspData) {
 	this.result <- data
 }
 
-func (this *AsyncResult) GetResult(timeout time.Duration) (*pb.RpcRspInfo, error) {
+func (this *AsyncResult) GetResult(timeout time.Duration) (*pb.RpcRspData, error) {
 	select {
 	case <-time.After(timeout):
 		close(this.result)
-		return &pb.RpcRspInfo{}, errors.New(fmt.Sprintf("GetResult AsyncResult: timeout %s", this.uid))
+		return &pb.RpcRspData{}, errors.New(fmt.Sprintf("GetResult AsyncResult: timeout %s", this.uid))
 	case result := <-this.result:
 		return result, nil
 	}
-	return &pb.RpcRspInfo{}, errors.New("GetResult AsyncResult error. reason: no")
+	return &pb.RpcRspData{}, errors.New("GetResult AsyncResult error. reason: no")
 }
 
 type AsyncResultMgr struct {
@@ -82,7 +82,7 @@ func (this *AsyncResultMgr) GetAsyncResult(uid string) (*AsyncResult, error) {
 	}
 }
 
-func (this *AsyncResultMgr) FillAsyncResult(uid string, data *pb.RpcRspInfo) error {
+func (this *AsyncResultMgr) FillAsyncResult(uid string, data *pb.RpcRspData) error {
 	r, err := this.GetAsyncResult(uid)
 	if err == nil {
 		this.Remove(uid)

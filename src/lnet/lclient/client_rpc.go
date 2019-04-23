@@ -33,10 +33,10 @@ func (this *RpcClient) Send(msg interface{}) error {
 	return this.transport.Send(msgPkg)
 }
 
-func (this *RpcClient) SendWaitResult(msg interface{}) (*pb.RpcRspInfo, error) {
-	msgRpc := msg.(*pb.RpcReqInfo)
+func (this *RpcClient) SendWaitResult(msg interface{}) (*pb.RpcRspData, error) {
+	msgRpc := msg.(*pb.RpcReqData)
 	asyncR := this.asyncResultMgr.Add()
-	msgRpc.Uid = asyncR.GetUid()
+	msgRpc.Info.Uid = asyncR.GetUid()
 	msgPkg := this.msgHandle.CreateMessagePackage(msgRpc)
 	this.transport.Send(msgPkg)
 

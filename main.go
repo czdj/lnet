@@ -22,8 +22,8 @@ func serverStart() {
 	msgHandle := lmsghandle.NewRpcMsgHandle(protocol)
 	//protocol := &lprotocol.GobProtocol{}
 	msgHandle.RegisterMsg(12, pb.GameItem{})
-	msgHandle.RegisterMsg(13, pb.RpcReqInfo{})
-	msgHandle.RegisterMsg(14, pb.RpcRspInfo{})
+	msgHandle.RegisterMsg(13, pb.RpcReqData{})
+	msgHandle.RegisterMsg(14, pb.RpcRspData{})
 
 	//server := lserver.NewTcpServer("127.0.0.1:9000", msgHandle)
 	//server := lserver.NewWebsocketServer("127.0.0.1:9000", msgHandle)
@@ -40,8 +40,8 @@ func clientStart() {
 	msgHandle := lmsghandle.NewRpcMsgHandle(protocol)
 
 	msgHandle.RegisterMsg(12, pb.GameItem{})
-	msgHandle.RegisterMsg(13, pb.RpcReqInfo{})
-	msgHandle.RegisterMsg(14, pb.RpcRspInfo{})
+	msgHandle.RegisterMsg(13, pb.RpcReqData{})
+	msgHandle.RegisterMsg(14, pb.RpcRspData{})
 
 	//client := lclient.NewTcpClient("127.0.0.1:9000", msgHandle)
 	//client := lclient.NewWebsocketClient("ws://127.0.0.1:9000/ws", msgHandle)
@@ -49,12 +49,14 @@ func clientStart() {
 	client.Connect()
 
 	//msg := &pb.GameItem{Id: 1, Type: 2, Count: 3}
-	msg := &pb.RpcReqInfo{Test: 999}
+	//msg := &pb.RpcReqInfo{Test: 999}
+	msg := &pb.RpcReqData{Info: &pb.RpcReqInfo{}, Req: 222}
 	//msg1 := "bbbbbbbb"
 	for {
 		//client.Send(msg)
 		r, _ := client.SendWaitResult(msg)
 		lnet.Logger.Info("SendWaitResult ", zap.Any("Result", r))
+		msg.Req = r.Rsp
 		//transport.Send(12,msg1)
 		time.Sleep(1 * time.Second)
 	}
