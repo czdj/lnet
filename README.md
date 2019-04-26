@@ -45,43 +45,43 @@
             OnTransportClose(transport ITransport)
         }
     ```
-##样例
-构建一个服务只需组合上述三个层次的结构，即可定制需要的服务  
+## 样例
+ 构建一个服务只需组合上述三个层次的结构，即可定制需要的服务  
 ```golang
-        //服务器逻辑
-        func serverStart() {
-            //选择协议
-        	protocol := &lprotocol.PbProtocol{}
-        	//选择消息处理函数
-        	msgHandle := lmsghandle.NewBaseMsgHandle(protocol)
-        	//注册消息
-        	msgHandle.RegisterMsg(12, pb.GameItem{})
-        	msgHandle.RegisterMsg(13, pb.RpcReqData{})
-        	msgHandle.RegisterMsg(14, pb.RpcRspData{})
-            //启动服务
-        	server := lserver.NewTcpServer("127.0.0.1:9000", msgHandle)
-        	server.Start()
-        }
-        
-        //客户端逻辑
-        func clientStart() {
-            //选择协议
-        	protocol := &lprotocol.PbProtocol{}
-            //选择消息处理函数
-        	msgHandle := lmsghandle.NewBaseMsgHandle(protocol)
-            //注册消息
-        	msgHandle.RegisterMsg(12, pb.GameItem{})
-        	msgHandle.RegisterMsg(13, pb.RpcReqData{})
-        	msgHandle.RegisterMsg(14, pb.RpcRspData{})
-        
-        	client := lclient.NewTcpClient("127.0.0.1:9000", msgHandle)
-        	client.Connect()
-        
-        	msg := &pb.GameItem{Id: 1, Type: 2, Count: 3}
-        	for {
-        		client.Send(msg)
-        		time.Sleep(1 * time.Second)
-        	}
-        }
-    ```
+//服务器逻辑
+func serverStart() {
+    //选择协议
+    protocol := &lprotocol.PbProtocol{}
+    //选择消息处理函数
+    msgHandle := lmsghandle.NewBaseMsgHandle(protocol)
+    //注册消息
+    msgHandle.RegisterMsg(12, pb.GameItem{})
+    msgHandle.RegisterMsg(13, pb.RpcReqData{})
+    msgHandle.RegisterMsg(14, pb.RpcRspData{})
+    //启动服务
+    server := lserver.NewTcpServer("127.0.0.1:9000", msgHandle)
+    server.Start()
+}
+
+//客户端逻辑
+func clientStart() {
+    //选择协议
+    protocol := &lprotocol.PbProtocol{}
+    //选择消息处理函数
+    msgHandle := lmsghandle.NewBaseMsgHandle(protocol)
+    //注册消息
+    msgHandle.RegisterMsg(12, pb.GameItem{})
+    msgHandle.RegisterMsg(13, pb.RpcReqData{})
+    msgHandle.RegisterMsg(14, pb.RpcRspData{})
+
+    client := lclient.NewTcpClient("127.0.0.1:9000", msgHandle)
+    client.Connect()
+
+    msg := &pb.GameItem{Id: 1, Type: 2, Count: 3}
+    for {
+        client.Send(msg)
+        time.Sleep(1 * time.Second)
+    }
+}
+```
  
